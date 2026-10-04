@@ -25,6 +25,32 @@ It allows you to design your floorplan visually, connect Home Assistant entities
 - macOS support
 - Windows support
 
+## Recommended workflow for creating your floorplan background
+
+For the best visual result, I recommend preparing your floorplan image before importing it into HA Floorplan Studio.
+
+You can start in several ways:
+
+- draw a simple sketch of your house or apartment by hand
+- create a floorplan in another program such as **Sweet Home 3D**
+- use any existing floorplan drawing or exported image
+
+Once you have the basic layout, you can give that image to **ChatGPT** or another AI image tool and ask it to create a cleaner, more realistic floorplan-style image.
+
+A simple workflow is:
+
+1. Create or draw the basic layout of your home.
+2. Export it or take a clear photo of the sketch.
+3. Give the image to ChatGPT or another AI tool.
+4. Ask the AI to create a realistic top-down floorplan while keeping the same room positions and proportions.
+5. Save the generated image.
+6. Import it into HA Floorplan Studio using **Background Image**.
+7. Add your Home Assistant entities, lights, sensors, switches, cameras and other elements on top of the image.
+
+> **Tip:** Always check that the AI-generated image still matches the real layout, room positions and proportions of your home before adding entities.
+
+This workflow is often the easiest way to create a clean and realistic visual floorplan without needing advanced 3D or graphic-design skills.
+
 ## Requirements
 
 - Python 3
