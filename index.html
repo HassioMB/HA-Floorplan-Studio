@@ -1,0 +1,1617 @@
+<!doctype html>
+<html lang="hr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>HA Floorplan Studio v1.0.0</title>
+<style>
+:root{--bg:#0b0f14;--panel:#121821;--panel2:#18212c;--line:#2b3746;--text:#edf3f8;--muted:#94a3b8;--accent:#4da3ff;--danger:#ff5d6c;--ok:#4bd17b;--warn:#ffcc66}
+*{box-sizing:border-box}html,body{margin:0;height:100%;background:var(--bg);color:var(--text);font:14px/1.35 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;overflow:hidden}
+button,input,select,textarea{font:inherit}button{background:var(--panel2);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;cursor:pointer}button:hover{border-color:#58718d}button.primary{background:#0f66b6;border-color:#2f8be0}button.success{background:#135d38;border-color:#2aa968}button.danger{background:#442028;border-color:#7d3340;color:#ffdbe0}button.tiny{padding:4px 7px;font-size:12px}button.active{outline:2px solid #61b0ff}
+input,select,textarea{width:100%;background:#0d131a;color:var(--text);border:1px solid var(--line);border-radius:7px;padding:7px 8px}input[type=checkbox]{width:auto}input[type=range]{padding:0}
+label{display:block;color:var(--muted);font-size:12px;margin:8px 0 4px}code{color:#bee0ff}.app{display:grid;grid-template-columns:310px 1fr 365px;height:100%}.side,.props{background:var(--panel);overflow:auto;padding:12px}.side{border-right:1px solid var(--line)}.props{border-left:1px solid var(--line)}.main{display:grid;grid-template-rows:auto 1fr auto;min-width:0;min-height:0}.top,.bottom{background:#0e141b;padding:8px 10px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-bottom:1px solid var(--line)}.bottom{border-top:1px solid var(--line);border-bottom:0}.workspace{overflow:auto;padding:18px;display:flex;justify-content:center;align-items:flex-start}
+#stage{position:relative;width:min(1500px,100%);aspect-ratio:16/9;background:#05070a;border:1px solid #354356;border-radius:10px;overflow:hidden;touch-action:none}#bg{position:absolute;inset:0;width:100%;height:100%;object-fit:fill;user-select:none;pointer-events:none}#vectorLayer,#drawLayer{position:absolute;inset:0;width:100%;height:100%;overflow:visible}#vectorLayer{z-index:2}#drawLayer{z-index:4;pointer-events:none}#objects{position:absolute;inset:0;z-index:3;pointer-events:none}
+.obj{position:absolute;transform:translate(-50%,-50%);user-select:none;touch-action:none;cursor:grab;pointer-events:auto}.obj.selected{outline:2px solid var(--accent);outline-offset:3px}.entity{display:flex;align-items:center;gap:7px;background:rgba(10,15,22,.84);border:1px solid rgba(255,255,255,.25);border-radius:999px;padding:5px 9px;box-shadow:0 3px 12px #0008;white-space:nowrap}.entity .dot{width:23px;height:23px;border-radius:50%;display:grid;place-items:center;background:#5b6877;color:#fff;font-size:14px;flex:0 0 auto}.entity.on .dot{background:#ffd54a;color:#111}.entity.unavailable .dot{background:#8e4f59}.entityText{display:flex;flex-direction:column;line-height:1.05}.entityMain{font-weight:750;font-size:13px;color:#fff}.entitySub{font-size:10px;color:#aebdce;margin-top:2px}.entitySingle{font-weight:720;font-size:13px;color:#fff}.overlay img{width:100%;height:100%;display:block;object-fit:contain;pointer-events:none}.overlay.selected{outline:2px solid var(--accent);outline-offset:2px}
+.roomPoly{cursor:grab;stroke:#4da3ff;stroke-width:.32;vector-effect:non-scaling-stroke}.roomPoly.selected{stroke:#a8d5ff;stroke-width:.5}.vertex{fill:#fff;stroke:#2389e8;stroke-width:.35;vector-effect:non-scaling-stroke;cursor:move}.roomLabel{font:2px system-ui;fill:#fff;stroke:#000;stroke-width:.28;paint-order:stroke;pointer-events:none;text-anchor:middle;dominant-baseline:middle}.uplightGroup{cursor:grab}.uplightSource{fill:#fff3bf;stroke:#ffd36b;stroke-width:.25;vector-effect:non-scaling-stroke}.uplightOutline{fill:none;stroke:#4da3ff;stroke-width:.25;vector-effect:non-scaling-stroke;stroke-dasharray:.8 .6}.uplightHandle{fill:#fff;stroke:#2389e8;stroke-width:.3;vector-effect:non-scaling-stroke;cursor:move}.ledStripGroup{cursor:grab}.ledStripGuide{fill:none;stroke:#4da3ff;stroke-width:.28;vector-effect:non-scaling-stroke;stroke-dasharray:.8 .55}.ledSpillGuide{fill:none;stroke:#6ee7ff;stroke-width:.25;vector-effect:non-scaling-stroke;stroke-dasharray:.65 .45;pointer-events:none}.ledStripHit{fill:none;stroke:#fff;stroke-opacity:.001;pointer-events:stroke}
+.list{display:flex;flex-direction:column;gap:6px;margin-top:8px}.item{padding:7px 8px;background:#0e141b;border:1px solid var(--line);border-radius:7px;display:flex;gap:8px;align-items:center;cursor:pointer}.item.active{border-color:var(--accent)}.item .name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.section{border-top:1px solid var(--line);margin-top:12px;padding-top:12px}.row{display:grid;grid-template-columns:1fr 1fr;gap:8px}.small{font-size:12px;color:var(--muted)}.badge{font-size:11px;border:1px solid var(--line);color:var(--muted);border-radius:999px;padding:3px 7px}.hint{border:1px solid #2a3d52;background:#0d1722;padding:9px;border-radius:8px;color:#bcc9d8}.hidden{display:none!important}.status{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--muted);margin-top:7px}.statusDot{width:9px;height:9px;border-radius:50%;background:#687789}.statusDot.ok{background:var(--ok)}.statusDot.bad{background:var(--danger)}
+#haList{max-height:275px;overflow:auto;display:flex;flex-direction:column;gap:5px;margin-top:8px}.haItem{border:1px solid var(--line);border-radius:7px;background:#0e141b;padding:7px}.haTop{display:flex;align-items:center;gap:7px}.haName{font-size:12px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.haId{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.haState{font-size:11px;color:#c9d7e6}.haBtns{display:flex;gap:5px;margin-top:6px}.haBtns button{flex:1}.sliderRow{display:grid;grid-template-columns:1fr 64px;gap:7px;align-items:center}
+#toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:#101923;border:1px solid #40526a;padding:10px 14px;border-radius:9px;opacity:0;pointer-events:none;transition:.2s;box-shadow:0 8px 30px #0009;z-index:99}#toast.show{opacity:1}h3{margin:2px 0 9px}.drawHelp{color:#ffe09a}.modeLive{background:#143c27;border-color:#2b9b5a}
+@media(max-width:1150px){.app{grid-template-columns:260px 1fr}.props{position:fixed;right:0;top:0;bottom:0;width:340px;z-index:20;box-shadow:-8px 0 30px #0008}.main{min-width:620px}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="side">
+  <h3>HA Floorplan Studio v1.0.0</h3>
+  <div class="small">Polygon rooms, live Home Assistant, LED strips, spotlights and direct deployment.</div>
+
+  <div class="section">
+    <b>Home Assistant</b>
+    <label>HA URL</label><input id="haUrl" placeholder="http://homeassistant.local:8123">
+    <label>Long-Lived Access Token</label><input id="haToken" type="password" placeholder="eyJ0eXAiOiJKV1Qi...">
+    <div class="row" style="margin-top:7px"><button id="haConnect" class="primary">Connect / Refresh</button><button id="haDisconnect">Disconnect</button></div>
+    <div class="status"><span id="haDot" class="statusDot"></span><span id="haStatus">Nije spojeno</span></div>
+    <label>Search Entities</label><input id="haSearch" placeholder="light, kitchen, temperature...">
+    <label>Domain</label><select id="haDomain"><option value="">All</option></select>
+    <div id="haList"></div>
+    <div class="small" style="margin-top:6px">The token is stored only for this browser session.</div>
+  </div>
+
+  <div class="section">
+    <label>Background Image</label><input id="bgFile" type="file" accept="image/*" style="display:none">
+<button type="button" onclick="document.getElementById('bgFile').click()">Choose File</button>
+<span id="bgFileName" class="small" style="margin-left:8px">No file chosen</span>
+    <div class="small" style="margin-top:6px">The background image is embedded into the SVG.</div>
+  </div>
+
+  <div class="section">
+    <button id="addEntity">＋ Entity</button>
+    <button id="addBoiler" style="margin-top:6px">▥ Level Indicator</button>
+    <button id="drawRoom" style="margin-top:6px">✏️ Draw Room with Points</button>
+    <button id="addUplight" style="margin-top:6px">💡 Uplight</button>
+    <button id="addSpotlight" style="margin-top:6px">🔦 Spotlight / Beam Light</button>
+    <button id="drawLedStrip" style="margin-top:6px">〰️ Draw LED Strip</button>
+    <button id="addOverlay" style="margin-top:6px">▧ PNG/SVG overlay</button>
+    <input id="overlayFile" class="hidden" type="file" accept="image/*,.svg">
+    <div id="drawStatus" class="small drawHelp" style="margin-top:7px"></div>
+  </div>
+
+  <div class="section"><b>Elements</b><div id="list" class="list"></div></div>
+  <div class="section"><b>Project</b><br><button id="saveProject" style="margin-top:8px">Save Project</button><button id="loadProjectBtn" style="margin-top:6px">Load Project</button><input id="loadProject" class="hidden" type="file" accept="application/json,.json"></div>
+</aside>
+
+<main class="main">
+  <div class="top">
+    <button id="modeBtn">✏️ EDIT</button>
+    <span class="badge">Room/LED: click points → Enter</span><span class="badge">Selected shape: drag blue handles</span><span class="badge">LIVE: click executes action</span>
+  </div>
+  <div class="workspace"><div id="stage"><img id="bg" alt=""><svg id="vectorLayer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg><div id="objects"></div><svg id="drawLayer" viewBox="0 0 100 100" preserveAspectRatio="none"></svg></div></div>
+  <div class="bottom">
+    <button id="exportDirect" class="success">🚀 DEPLOY TO HOME ASSISTANT</button>
+    <button id="exportSvg">⬇ SVG</button><button id="exportCss">⬇ CSS</button><button id="exportYaml">⬇ floorplan.yaml</button><button id="exportCard">⬇ card.yaml</button>
+    <span class="small">Add once to your dashboard: <code>config: /local/floorplan/floorplan.yaml</code></span>
+  </div>
+</main>
+
+<aside class="props">
+  <h3>Properties</h3>
+  <div id="none" class="hint">Select an element. To create a new room, click “Draw Room with Points”.</div>
+  <div id="form" class="hidden">
+    <label>Name</label><input id="pName">
+    <label>SVG ID</label><input id="pId"><div class="small">Bez razmaka. Koristi ga ha-floorplan.</div>
+    <label>Tip</label><input id="pType" disabled>
+    <label>HA entity</label><input id="pEntity" list="entityOptions" placeholder="light.dnevni"><datalist id="entityOptions"></datalist>
+    <div id="liveState" class="small" style="margin-top:5px"></div>
+    <label>Tap akcija</label><select id="pAction"><option value="toggle">toggle</option><option value="more-info">more-info</option><option value="call-service">call-service</option><option value="none">bez akcije</option></select>
+    <label>Action Entity</label><input id="pActionEntity" list="entityOptions" placeholder="blank = same as HA entity">
+    <div class="small">Display/state can follow one entity while the click action controls another. For example, a temperature sensor can be displayed while the action controls a different switch.</div>
+    <div id="serviceBox" class="hidden"><label>Service</label><input id="pService" placeholder="button.press"><label>Target entity</label><input id="pTarget" list="entityOptions" placeholder="button.example_action"></div>
+    <label>Vidljivo samo kada state =</label><input id="pVisible" placeholder="prazno = uvijek"><div class="small">Za otvorenu/zatvorenu kapiju koristi dva overlaya.</div>
+
+    <div id="entityBox">
+      <label>Brzi odabir ikonice</label>
+      <select id="pIconPreset">
+        <option value="">— zadrži / ručno —</option>
+        <option>🌡️</option><option>🔥</option><option>💧</option><option>🚿</option><option>💡</option><option>⚡</option>
+        <option>♻️</option><option>💨</option><option>🌀</option><option>🚪</option><option>🔒</option><option>🔓</option>
+        <option>🌿</option><option>🌳</option><option>☀️</option><option>🌙</option><option>🔊</option><option>🤖</option>
+        <option>📷</option><option>📍</option><option>🚗</option><option>⚙️</option><option>⏻</option><option>◉</option>
+      </select>
+      <label>Ikonica / simbol</label><input id="pSymbol" placeholder="🌡️  — možeš zalijepiti bilo koji emoji">
+      <label>Marker Display</label>
+      <select id="pDisplayMode">
+        <option value="icon_value">Ikonica + vrijednost</option>
+        <option value="icon_name_value">Icon + Name + Value</option>
+        <option value="icon_name">Icon + Name</option>
+        <option value="icon_only">Samo ikonica</option>
+        <option value="name_value">Name + Value</option>
+        <option value="value_only">Samo vrijednost</option>
+      </select>
+      <div class="row">
+        <div><label>Decimale</label><select id="pDecimals"><option value="0">0</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select></div>
+        <div><label>Jedinica</label><select id="pUnitMode"><option value="auto">Automatski iz HA</option><option value="none">Bez jedinice</option></select></div>
+      </div>
+      <div class="small">Za senzor temperature npr. dobiješ <b>🌡️ 57.1 °C</b>. Ikonicu možeš izabrati gore ili upisati bilo koji emoji.</div>
+      <label>Size (%)</label><input id="pSize" type="number" min="0.5" max="20" step="0.1">
+      <label>Opacity ikonice</label><div class="sliderRow"><input id="pIconOpacity" type="range" min="0" max="1" step="0.01"><input id="pIconOpacityN" type="number" min="0" max="1" step="0.01"></div>
+      <label>Name / Value Opacity</label><div class="sliderRow"><input id="pTextOpacity" type="range" min="0" max="1" step="0.01"><input id="pTextOpacityN" type="number" min="0" max="1" step="0.01"></div>
+      <label>Marker Background Opacity</label><div class="sliderRow"><input id="pPillOpacity" type="range" min="0" max="1" step="0.01"><input id="pPillOpacityN" type="number" min="0" max="1" step="0.01"></div>
+      <div class="row"><div><label>X (%)</label><input id="pX" type="number" step="0.1"></div><div><label>Y (%)</label><input id="pY" type="number" step="0.1"></div></div>
+    </div>
+
+    <div id="roomBox" class="hidden">
+      <label>Light Color</label><input id="pColor" type="color">
+      <label>OFF prozirnost</label><div class="sliderRow"><input id="pOffOpacity" type="range" min="0" max="0.8" step="0.01"><input id="pOffOpacityN" type="number" min="0" max="0.8" step="0.01"></div>
+      <label>ON maksimalna jačina</label><div class="sliderRow"><input id="pOnOpacity" type="range" min="0" max="1" step="0.01"><input id="pOnOpacityN" type="number" min="0" max="1" step="0.01"></div>
+      <label>Mekoća rubova / prirodni glow</label><div class="sliderRow"><input id="pRoomSoftness" type="range" min="0" max="4" step="0.1"><input id="pRoomSoftnessN" type="number" min="0" max="4" step="0.1"></div>
+      <div class="small">Softens the light transition around room edges. Recommended: 1.2–2.0.</div>
+      <label><input id="pFollowBrightness" type="checkbox"> Follow Actual Light Brightness</label>
+      <label>Preview brightness</label><div class="sliderRow"><input id="pPreviewBrightness" type="range" min="0" max="100" step="1"><input id="pPreviewBrightnessN" type="number" min="0" max="100" step="1"></div>
+      <label><input id="pRoomLabel" type="checkbox"> Show Room Name</label>
+      <button id="redrawRoom" style="margin-top:8px">Redraw Shape</button>
+      <div class="small" style="margin-top:5px">Svaku plavu točku možeš posebno povlačiti.</div>
+    </div>
+
+    <div id="uplightBox" class="hidden">
+      <label>Light Color</label><input id="pUColor" type="color">
+      <div class="row"><div><label>Duljina snopa (%)</label><input id="pULength" type="number" min="2" max="60" step="0.5"></div><div><label>Širina krošnje (%)</label><input id="pUSpread" type="number" min="1" max="50" step="0.5"></div></div>
+      <label>Smjer / kut (°)</label><input id="pUAngle" type="number" min="-360" max="360" step="1">
+      <label>OFF jačina</label><div class="sliderRow"><input id="pUOff" type="range" min="0" max="0.5" step="0.01"><input id="pUOffN" type="number" min="0" max="0.5" step="0.01"></div>
+      <label>ON maksimalna jačina</label><div class="sliderRow"><input id="pUOn" type="range" min="0" max="1" step="0.01"><input id="pUOnN" type="number" min="0" max="1" step="0.01"></div>
+      <label>Zamućenje glow-a</label><div class="sliderRow"><input id="pUBlur" type="range" min="0" max="12" step="0.2"><input id="pUBlurN" type="number" min="0" max="12" step="0.2"></div>
+      <label><input id="pUFollow" type="checkbox"> Prati stvarni brightness</label>
+      <div class="row"><div><label>X (%)</label><input id="pUX" type="number" step="0.1"></div><div><label>Y (%)</label><input id="pUY" type="number" step="0.1"></div></div>
+    </div>
+
+
+    <div id="boilerBox" class="hidden">
+
+      <hr>
+
+      <div class="small" style="margin-bottom:8px">
+        Value Display
+      </div>
+
+      <label>Value Opacity</label>
+      <div class="sliderRow">
+        <input id="pBPctOpacity"
+               type="range"
+               min="0"
+               max="1"
+               step="0.01">
+        <input id="pBPctOpacityN"
+               type="number"
+               min="0"
+               max="1"
+               step="0.01">
+      </div>
+
+      <label>Value Position X</label>
+      <div class="sliderRow">
+        <input id="pBPctX"
+               type="range"
+               min="-50"
+               max="150"
+               step="1">
+        <input id="pBPctXN"
+               type="number"
+               min="-50"
+               max="150"
+               step="1">
+      </div>
+
+      <label>Value Position Y</label>
+      <div class="sliderRow">
+        <input id="pBPctY"
+               type="range"
+               min="-50"
+               max="150"
+               step="1">
+        <input id="pBPctYN"
+               type="number"
+               min="-50"
+               max="150"
+               step="1">
+      </div>
+
+      <label>Value Size</label>
+      <div class="sliderRow">
+        <input id="pBPctSize"
+               type="range"
+               min="8"
+               max="48"
+               step="1">
+        <input id="pBPctSizeN"
+               type="number"
+               min="8"
+               max="48"
+               step="1">
+      </div>
+
+    </div>
+
+    <div id="spotlightBox" class="hidden">
+      <label>Spotlight Color</label><input id="pSColor" type="color">
+      <div class="row"><div><label>Duljina snopa (%)</label><input id="pSLength" type="number" min="2" max="80" step="0.5"></div><div><label>Kut lepeze (°)</label><input id="pSBeam" type="number" min="5" max="160" step="1"></div></div>
+      <label>Smjer / kut (°)</label><input id="pSAngle" type="number" min="-360" max="360" step="1">
+      <label>Mekoća rubova</label><div class="sliderRow"><input id="pSBlur" type="range" min="0" max="12" step="0.2"><input id="pSBlurN" type="number" min="0" max="12" step="0.2"></div>
+      <label>OFF jačina</label><div class="sliderRow"><input id="pSOff" type="range" min="0" max="0.5" step="0.01"><input id="pSOffN" type="number" min="0" max="0.5" step="0.01"></div>
+      <label>ON maksimalna jačina</label><div class="sliderRow"><input id="pSOn" type="range" min="0" max="1" step="0.01"><input id="pSOnN" type="number" min="0" max="1" step="0.01"></div>
+      <label><input id="pSFollow" type="checkbox"> Prati stvarni brightness</label>
+      <div class="row"><div><label>X (%)</label><input id="pSX" type="number" step="0.1"></div><div><label>Y (%)</label><input id="pSY" type="number" step="0.1"></div></div>
+      <div class="small">Spotlight beam: the source is a point and the beam expands outward. In EDIT mode, drag the blue handle to adjust direction and length.</div>
+    </div>
+
+
+    <div id="ledStripBox" class="hidden">
+      <label>LED Strip Color</label><input id="pLColor" type="color">
+      <div class="row"><div><label>Debljina trake (%)</label><input id="pLWidth" type="number" min="0.05" max="3" step="0.05"></div><div><label>Širina glow-a (%)</label><input id="pLGlow" type="number" min="0.2" max="8" step="0.1"></div></div>
+      <label>Mekoća glow-a</label><div class="sliderRow"><input id="pLBlur" type="range" min="0" max="12" step="0.2"><input id="pLBlurN" type="number" min="0" max="12" step="0.2"></div>
+      <label>OFF jačina</label><div class="sliderRow"><input id="pLOff" type="range" min="0" max="0.5" step="0.01"><input id="pLOffN" type="number" min="0" max="0.5" step="0.01"></div>
+      <label>ON maksimalna jačina</label><div class="sliderRow"><input id="pLOn" type="range" min="0" max="1" step="0.01"><input id="pLOnN" type="number" min="0" max="1" step="0.01"></div>
+      <label><input id="pLFollow" type="checkbox"> Prati stvarni brightness</label>
+      <label><input id="pLFollowColor" type="checkbox"> Prati RGB / HS / XY boju iz Home Assistanta</label>
+      <div class="small">If the light entity does not provide a color, the manually selected LED strip color is used.</div>
+      <div class="section" style="margin-top:10px;padding-top:9px">
+        <b>Light Spill</b>
+        <label><input id="pLSpillEnabled" type="checkbox"> LED Strip Casts Light onto Surface</label>
+        <div class="row"><div><label>Light Direction</label><select id="pLSpillDirection"><option value="down">Down</option><option value="up">Up</option><option value="right">Right</option><option value="left">Left</option><option value="custom">Custom Angle</option></select></div><div><label>Custom Angle (°)</label><input id="pLSpillAngle" type="number" min="-360" max="360" step="1"></div></div>
+        <div class="row"><div><label>Light Depth (%)</label><input id="pLSpillDepth" type="number" min="0.2" max="25" step="0.2"></div><div><label>Light Width (%)</label><input id="pLSpillSpread" type="number" min="0.2" max="12" step="0.1"></div></div>
+        <label>Light Spill Intensity</label><div class="sliderRow"><input id="pLSpillOpacity" type="range" min="0" max="1" step="0.01"><input id="pLSpillOpacityN" type="number" min="0" max="1" step="0.01"></div>
+        <label>Light Spill Softness</label><div class="sliderRow"><input id="pLSpillBlur" type="range" min="0" max="16" step="0.2"><input id="pLSpillBlurN" type="number" min="0" max="16" step="0.2"></div>
+        <div class="small">Primjer ispod kuhinjskih elemenata: <b>Down</b>, dubina 4–7%, širina 2–4%, jačina 0.35–0.55. Spill prati cijeli L/U oblik trake, HA brightness i RGB boju.</div>
+      </div>
+      <button id="redrawLedStrip" style="margin-top:8px">Redraw LED Strip</button>
+      <div class="small" style="margin-top:5px">Click points in order. You can create a straight, L-shaped, U-shaped or custom angular strip. Each blue point can be moved individually afterwards.</div>
+    </div>
+
+    <div id="overlayBox" class="hidden">
+      <div class="row"><div><label>Width (%)</label><input id="pOW" type="number" step="0.1"></div><div><label>Height (%)</label><input id="pOH" type="number" step="0.1"></div></div>
+      <div class="row"><div><label>X (%)</label><input id="pOX" type="number" step="0.1"></div><div><label>Y (%)</label><input id="pOY" type="number" step="0.1"></div></div>
+    </div>
+
+    <button id="delete" class="danger" style="width:100%;margin-top:14px">Delete Element</button>
+  </div>
+
+  <div class="section">
+    <b>Deploy to Home Assistant</b>
+
+    <label>Method</label>
+    <select id="deployMode">
+      <option value="ssh">SSH (Automatic)</option>
+      <option value="local">Local Folder</option>
+    </select>
+
+    <div id="sshBox">
+
+      <div class="row">
+        <div>
+          <label>Home Assistant Host</label>
+          <input id="sshHost" placeholder="192.168.1.100">
+        </div>
+
+        <div>
+          <label>SSH Port</label>
+          <input id="sshPort" type="number" value="22">
+        </div>
+      </div>
+
+      <label>SSH Username</label>
+      <input id="sshUser" placeholder="Username configured in your SSH add-on">
+
+      <label>Private SSH Key</label>
+      <input id="sshKey" placeholder="Automatically created by HA Floorplan Studio">
+
+      <div class="small" style="margin-top:5px">
+        HA Floorplan Studio can automatically create and manage a dedicated SSH key for this computer.
+      </div>
+
+      <button id="setupSSH" class="primary" style="width:100%;margin-top:9px">
+        🔑 Set Up SSH Automatically
+      </button>
+
+      <div id="sshWizard" class="hidden" style="
+        margin-top:10px;
+        padding:10px;
+        border:1px solid rgba(255,255,255,.15);
+        border-radius:10px;
+        background:rgba(255,255,255,.035);
+      ">
+
+        <b id="sshWizardTitle">SSH Setup</b>
+
+        <div id="sshWizardText" class="small" style="margin-top:7px;line-height:1.45"></div>
+
+        <div id="sshPublicWrap" class="hidden" style="margin-top:10px">
+
+          <label>Public SSH Key</label>
+
+          <textarea
+            id="sshPublicKey"
+            readonly
+            style="
+              width:100%;
+              min-height:85px;
+              resize:vertical;
+              font-family:monospace;
+              font-size:11px;
+              box-sizing:border-box;
+            "
+          ></textarea>
+
+          <button id="copySSHKey" type="button" style="width:100%;margin-top:6px">
+            📋 Copy Public Key
+          </button>
+
+          <div style="
+            margin-top:12px;
+            padding:10px;
+            border-radius:8px;
+            background:rgba(255,190,40,.08);
+          ">
+
+            <b>One manual step may be required in Home Assistant</b>
+
+            <div class="small" style="margin-top:7px;line-height:1.55">
+              1. Open <b>Home Assistant</b>.<br>
+              2. Go to <b>Settings → Add-ons</b>.<br>
+              3. Open the SSH / Terminal add-on you use.<br>
+              4. Open its <b>Configuration</b> page.<br>
+              5. Find <b>authorized_keys</b>, <b>Public Keys</b>, or the SSH key configuration section.<br>
+              6. Paste the public key shown above.<br>
+              7. Save the add-on configuration.<br>
+              8. Restart the SSH add-on.<br>
+              9. Return here and click <b>Test Connection</b>.
+            </div>
+
+            <div class="small" style="margin-top:8px">
+              SSH add-ons can use slightly different configuration names. If you do not see
+              <b>authorized_keys</b>, check the documentation for your installed SSH add-on.
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+      <label>Home Assistant Target Directory <span class="small">(Auto-detected)</span></label>
+      <input id="sshPath" value="/config/www/floorplan">
+
+      <button id="testDeploy" style="width:100%;margin-top:8px">
+        Test Connection
+      </button>
+
+      <div id="deployStatus" class="status">
+        <span class="statusDot" id="deployDot"></span>
+        <span id="deployText">Not Tested</span>
+      </div>
+
+    </div>
+
+    <div id="localBox" class="hidden">
+
+      <label>Local Destination Folder</label>
+      <input id="localPath" placeholder="/path/to/floorplan">
+
+      <button id="testLocalDeploy" style="width:100%;margin-top:8px">
+        Test Folder
+      </button>
+
+    </div>
+
+  </div>
+
+  <div class="section">
+    <b>Display in Home Assistant</b>
+    <label>Floorplan Screen Fit</label>
+    <select id="screenFit">
+      <option value="contain">Fit Entire Image (No Cropping)</option>
+      <option value="cover">Fill Entire Screen (May Crop)</option>
+      <option value="stretch">Stretch to Fill Screen</option>
+    </select>
+    <div class="small">Recommended for TV/tablet: <b>Fit Entire Image</b>. If you want the image to fill the display without empty space, choose <b>Fill Entire Screen</b>.</div>
+  </div>
+  <div class="section"><b>Home Assistant Export Paths</b><label>SVG URL</label><input id="svgPath" value="/local/floorplan/floorplan.svg"><label>CSS URL</label><input id="cssPath" value="/local/floorplan/floorplan.css"></div>
+</aside>
+</div>
+<div id="toast"></div>
+<script>
+(()=>{
+const $=s=>document.querySelector(s), stage=$('#stage'),bg=$('#bg'),objects=$('#objects'),vectorLayer=$('#vectorLayer'),drawLayer=$('#drawLayer');
+let selected=null,drag=null,vertexDrag=null,uplinkDrag=null,drawMode=null,tempPoints=[],liveMode=false,haStates=[],haMap=new Map(),haTimer=null;
+const project={version:4.9,screenFit:'contain',bgData:'',bgWidth:1600,bgHeight:900,elements:[]};
+const uid=(p='el')=>p+'_'+Math.random().toString(36).slice(2,8); const safe=s=>(s||uid()).trim().replace(/[^a-zA-Z0-9_.:-]+/g,'_');
+const html=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[c]));
+const xml=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&apos;'}[c]));
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)); const el=()=>project.elements.find(e=>e.id===selected); const stateOf=id=>haMap.get(id||'');
+function toast(t){const x=$('#toast');x.textContent=t;x.classList.add('show');setTimeout(()=>x.classList.remove('show'),1800)}
+function readData(f){return new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(f)})}
+function download(name,content,type='text/plain'){const b=new Blob([content],{type}),a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
+function friendly(s){return s?.attributes?.friendly_name||s?.entity_id||''}
+function domainSymbol(id){const d=(id||'').split('.')[0];return({light:'💡',switch:'⏻',binary_sensor:'◉',sensor:'◌',cover:'🚪',button:'●',climate:'🌡️',vacuum:'🤖',media_player:'🔊'})[d]||'•'}
+function entityDisplayMode(e){if(e.displayMode)return e.displayMode;if(e.label===false)return'icon_only';const d=(e.entity||'').split('.')[0];return d==='sensor'?'icon_value':'icon_name'}
+function formattedEntityState(e,s){if(!s)return'—';let raw=String(s.state??'');if(['unknown','unavailable','none',''].includes(raw.toLowerCase()))return'—';const n=Number(raw),dec=Math.max(0,Math.min(3,Number(e.decimals??1)));let value=Number.isFinite(n)?n.toFixed(dec):raw;if(Number.isFinite(n)&&dec>0)value=value.replace(/(\.\d*?[1-9])0+$|\.0+$/,'$1');const unit=(e.unitMode??'auto')==='auto'?(s.attributes?.unit_of_measurement||''):'';return unit?`${value} ${unit}`:value}
+function entityHtmlContent(e,s){const mode=entityDisplayMode(e),name=html(e.name||e.entity||e.id),value=html(formattedEntityState(e,s)),io=Number(e.iconOpacity??1),to=Number(e.textOpacity??1),icon=`<span class="dot" style="opacity:${io}">${html(e.symbol||'•')}</span>`;if(mode==='icon_only')return icon;if(mode==='icon_value')return `${icon}<span class="entitySingle" style="opacity:${to}">${value}</span>`;if(mode==='icon_name')return `${icon}<span class="entitySingle" style="opacity:${to}">${name}</span>`;if(mode==='icon_name_value')return `${icon}<span class="entityText" style="opacity:${to}"><span class="entityMain">${value}</span><span class="entitySub">${name}</span></span>`;if(mode==='name_value')return `<span class="entityText" style="opacity:${to}"><span class="entityMain">${value}</span><span class="entitySub">${name}</span></span>`;return `<span class="entitySingle" style="opacity:${to}">${value}</span>`}
+function brightnessFactor(s){if(!s||s.state!=='on')return 0;const b=s.attributes?.brightness;return Number.isFinite(b)?clamp(b/255,0,1):1}
+function rgba(hex,a){let h=(hex||'#ffd36b').replace('#','');if(h.length===3)h=h.split('').map(x=>x+x).join('');const n=parseInt(h,16);return`rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`}
+function rgbCss(r,g,b){return `rgb(${Math.round(clamp(Number(r)||0,0,255))},${Math.round(clamp(Number(g)||0,0,255))},${Math.round(clamp(Number(b)||0,0,255))})`}
+function hsToRgbCss(h,s){h=((Number(h)||0)%360+360)%360;s=clamp((Number(s)||0)/100,0,1);const v=1,c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;let r=0,g=0,b=0;if(h<60){r=c;g=x}else if(h<120){r=x;g=c}else if(h<180){g=c;b=x}else if(h<240){g=x;b=c}else if(h<300){r=x;b=c}else{r=c;b=x}return rgbCss((r+m)*255,(g+m)*255,(b+m)*255)}
+function xyToRgbCss(x,y){x=Number(x);y=Number(y);if(!Number.isFinite(x)||!Number.isFinite(y)||y<=0)return null;const Y=1,X=(Y/y)*x,Z=(Y/y)*(1-x-y);let r=X*1.656492-Y*.354851-Z*.255038,g=-X*.707196+Y*1.655397+Z*.036152,b=X*.051713-Y*.121364+Z*1.01153;const gamma=v=>v<=.0031308?12.92*v:(1.055*Math.pow(Math.max(0,v),1/2.4)-.055);r=gamma(r);g=gamma(g);b=gamma(b);const max=Math.max(r,g,b,1);r/=max;g/=max;b/=max;return rgbCss(r*255,g*255,b*255)}
+function lightColor(e,s){const fallback=e.color||'#ffd98a';if(e.followColor===false||!s||s.state!=='on')return fallback;const a=s.attributes||{},rgb=a.rgb_color,hs=a.hs_color,xy=a.xy_color;if(Array.isArray(rgb)&&rgb.length>=3)return rgbCss(rgb[0],rgb[1],rgb[2]);if(Array.isArray(hs)&&hs.length>=2)return hsToRgbCss(hs[0],hs[1]);if(Array.isArray(xy)&&xy.length>=2)return xyToRgbCss(xy[0],xy[1])||fallback;return fallback}
+function ledSpillAngle(e){const d=e.spillDirection||'down';if(d==='down')return 90;if(d==='up')return -90;if(d==='right')return 0;if(d==='left')return 180;return Number(e.spillAngle??90)}
+function ledSpillVector(e,factor=1){const depth=Math.max(0,Number(e.spillDepth??5)),a=ledSpillAngle(e)*Math.PI/180;return{x:Math.cos(a)*depth*factor,y:Math.sin(a)*depth*factor}}
+function ledSpillLayers(){return[{t:.12,w:.55,o:.34,b:.55},{t:.28,w:.72,o:.27,b:.72},{t:.48,w:.94,o:.19,b:.92},{t:.70,w:1.18,o:.12,b:1.12},{t:.92,w:1.48,o:.065,b:1.35}]}
+function roomOpacity(e){const s=stateOf(e.entity),off=Number(e.offOpacity??0),on=Number(e.onOpacity??.34);if(s)return s.state==='on'?off+(on-off)*(e.followBrightness!==false?brightnessFactor(s):1):off;return off+(on-off)*(Number(e.previewBrightness??100)/100)}
+function lightOpacity(e){const s=stateOf(e.entity),off=Number(e.offOpacity??0),on=Number(e.onOpacity??.7);if(s)return s.state==='on'?off+(on-off)*(e.followBrightness!==false?brightnessFactor(s):1):off;return on*.85}
+function centerOf(points){if(!points?.length)return{x:50,y:50};return{x:points.reduce((a,p)=>a+p.x,0)/points.length,y:points.reduce((a,p)=>a+p.y,0)/points.length}}
+function percentPoint(ev){const r=stage.getBoundingClientRect();return{x:clamp((ev.clientX-r.left)/r.width*100,0,100),y:clamp((ev.clientY-r.top)/r.height*100,0,100)}}
+
+$('#bgFile').onchange=async ev=>{const f=ev.target.files[0];if(!f)return;project.bgData=await readData(f);const im=new Image();im.onload=()=>{project.bgWidth=im.naturalWidth||1600;project.bgHeight=im.naturalHeight||900;stage.style.aspectRatio=`${project.bgWidth}/${project.bgHeight}`;render()};im.src=project.bgData};
+$('#addEntity').onclick=()=>addEntity('');
+function addEntity(entityId){const s=stateOf(entityId),dom=(entityId||'').split('.')[0];const e={id:uid('entity'),type:'entity',name:s?friendly(s):'New Entity',x:50,y:50,size:2.3,entity:entityId,action:'toggle',service:'',target:'',visible:'',symbol:domainSymbol(entityId),displayMode:dom==='sensor'?'icon_value':'icon_name',decimals:1,unitMode:'auto',iconOpacity:1,textOpacity:1,pillOpacity:.84};project.elements.push(e);selected=e.id;render()}
+$('#addOverlay').onclick=()=>$('#overlayFile').click();
+
+$('#addBoiler').onclick=()=>addBoiler();
+
+function addBoiler(){
+  const e={
+    id:uid('boiler'),
+    type:'boiler',
+    name:'Level Indicator',
+    x:50,
+    y:50,
+    w:6.8,
+    h:18,
+    entity:'',
+    action:'more-info',
+    actionEntity:'',
+    service:'',
+    target:'',
+    visible:'',
+    percentOpacity:1,
+    percentX:50,
+    percentY:50,
+    percentSize:20
+  };
+
+  project.elements.push(e);
+  selected=e.id;
+  render();
+}
+
+function boilerBandColor(p){
+  p=Math.max(0,Math.min(100,Number(p)||0));
+
+  if(p<=20) return '#1769ff';
+  if(p<=40) return '#00c8ff';
+  if(p<=60) return '#24d16f';
+  if(p<=75) return '#ffd23c';
+  if(p<=90) return '#ff7a00';
+  return '#ff3030';
+}
+
+function boilerData(e){
+  const st=stateOf(e.entity);
+  const raw=st?.state;
+  const low=String(raw??'').toLowerCase();
+  const n=Number(raw);
+
+  const valid=
+    !['unknown','unavailable','none',''].includes(low) &&
+    Number.isFinite(n);
+
+  const pct=valid ? clamp(n,0,100) : 0;
+
+  return {
+    valid,
+    pct,
+    value:valid ? Math.round(pct)+'%' : '—'
+  };
+}
+
+$('#overlayFile').onchange=async ev=>{const f=ev.target.files[0];if(!f)return;const data=await readData(f),im=new Image();im.onload=()=>{const w=20,h=w*(im.naturalHeight/im.naturalWidth)*(project.bgWidth/project.bgHeight);const e={id:uid('overlay'),type:'overlay',name:f.name.replace(/\.[^.]+$/,''),x:50,y:50,w,h,data,entity:'',action:'none',service:'',target:'',visible:''};project.elements.push(e);selected=e.id;render()};im.src=data};
+function uplightGeometry(e){const len=Number(e.length||18),ang=(Number(e.angle||0)-90)*Math.PI/180,dx=Math.cos(ang)*len,dy=Math.sin(ang)*len,tip={x:e.x+dx,y:e.y+dy},sp=Number(e.spread||13)/2,perp={x:-Math.sin(ang)*sp,y:Math.cos(ang)*sp};return{x:e.x,y:e.y,tip,l:{x:tip.x+perp.x,y:tip.y+perp.y},r:{x:tip.x-perp.x,y:tip.y-perp.y},trunk1:{x:e.x+dx*.55-perp.x*.12,y:e.y+dy*.55-perp.y*.12},trunk2:{x:e.x+dx*.55+perp.x*.12,y:e.y+dy*.55+perp.y*.12}}}
+function spotlightGeometry(e){const len=Number(e.length||18),center=(Number(e.angle||0)-90)*Math.PI/180,half=(Number(e.beamAngle||45)/2)*Math.PI/180;const tip={x:e.x+Math.cos(center)*len,y:e.y+Math.sin(center)*len};const l={x:e.x+Math.cos(center-half)*len,y:e.y+Math.sin(center-half)*len};const r={x:e.x+Math.cos(center+half)*len,y:e.y+Math.sin(center+half)*len};const innerLen=len*.86,innerHalf=half*.38;const il={x:e.x+Math.cos(center-innerHalf)*innerLen,y:e.y+Math.sin(center-innerHalf)*innerLen};const ir={x:e.x+Math.cos(center+innerHalf)*innerLen,y:e.y+Math.sin(center+innerHalf)*innerLen};return{x:e.x,y:e.y,tip,l,r,il,ir}}
+$('#addUplight').onclick=()=>{const e={id:uid('uplight'),type:'uplight',name:'Uplight',x:50,y:72,length:18,spread:13,angle:0,color:'#ffd58a',offOpacity:0,onOpacity:.72,blur:4.5,followBrightness:true,entity:'',action:'toggle',service:'',target:'',visible:''};project.elements.push(e);selected=e.id;render()};
+$('#addSpotlight').onclick=()=>{const e={id:uid('spotlight'),type:'spotlight',name:'Spotlight',x:50,y:50,length:18,beamAngle:45,angle:0,color:'#ffe0a0',offOpacity:0,onOpacity:.72,blur:3.6,followBrightness:true,entity:'',action:'toggle',actionEntity:'',service:'',target:'',visible:''};project.elements.push(e);selected=e.id;render()};
+$('#drawLedStrip').onclick=()=>startLedDraw(null);$('#redrawLedStrip').onclick=()=>{const e=el();if(e?.type==='ledstrip')startLedDraw(e.id)};
+function startLedDraw(replaceId){liveMode=false;updateModeBtn();drawMode={type:'ledstrip',replaceId};tempPoints=[];$('#drawStatus').textContent='LED strip: klikaj po putanji. Enter ili dvoklik završava. Esc odustaje.';renderDraw()}
+function finishLedStrip(){if(!drawMode||tempPoints.length<2){toast('Treba najmanje 2 točke');return}const old=drawMode.replaceId?project.elements.find(e=>e.id===drawMode.replaceId):null;const base=old||{id:uid('ledstrip'),type:'ledstrip',name:'LED strip',entity:'',action:'toggle',actionEntity:'',service:'',target:'',visible:'',color:'#ffd98a',width:.45,glowWidth:2.0,blur:2.8,offOpacity:0,onOpacity:.82,followBrightness:true,followColor:true,spillEnabled:true,spillDirection:'down',spillAngle:90,spillDepth:5,spillSpread:2.8,spillOpacity:.46,spillBlur:4.2};base.points=tempPoints.map(p=>({...p}));if(!old)project.elements.push(base);selected=base.id;drawMode=null;tempPoints=[];$('#drawStatus').textContent='';renderDraw();render()}
+function finishCurrentDraw(){if(!drawMode)return;if(drawMode.type==='ledstrip')finishLedStrip();else finishRoom()}
+
+$('#drawRoom').onclick=()=>startRoomDraw(null);$('#redrawRoom').onclick=()=>{const e=el();if(e?.type==='room')startRoomDraw(e.id)};
+function startRoomDraw(replaceId){liveMode=false;updateModeBtn();drawMode={type:'room',replaceId};tempPoints=[];$('#drawStatus').textContent='Klikaj po rubu sobe. Enter ili klik na prvu točku završava. Esc odustaje.';renderDraw()}
+function finishRoom(){if(!drawMode||tempPoints.length<3){toast('At least 3 points are required');return}const old=drawMode.replaceId?project.elements.find(e=>e.id===drawMode.replaceId):null;const base=old||{id:uid('room'),type:'room',name:'Room',entity:'',action:'toggle',actionEntity:'',service:'',target:'',visible:'',color:'#ffd36b',offOpacity:0,onOpacity:.34,softness:1.5,followBrightness:true,previewBrightness:100,roomLabel:true};base.points=tempPoints.map(p=>({...p}));if(!old)project.elements.push(base);selected=base.id;drawMode=null;tempPoints=[];$('#drawStatus').textContent='';renderDraw();render()}
+function cancelDraw(){drawMode=null;tempPoints=[];$('#drawStatus').textContent='';renderDraw()}
+stage.addEventListener('click',ev=>{if(liveMode)return;if(drawMode){const p=percentPoint(ev);if(drawMode.type==='room'&&tempPoints.length>=3){const f=tempPoints[0],r=stage.getBoundingClientRect(),dx=(p.x-f.x)*r.width/100,dy=(p.y-f.y)*r.height/100;if(Math.hypot(dx,dy)<16){finishRoom();return}}tempPoints.push(p);renderDraw();return}if(ev.target===stage||ev.target===bg||ev.target===vectorLayer){selected=null;render()}});
+stage.addEventListener('dblclick',ev=>{if(drawMode&&tempPoints.length>=(drawMode.type==='ledstrip'?2:3)){ev.preventDefault();finishCurrentDraw()}});
+function renderDraw(){drawLayer.innerHTML='';if(!drawMode||!tempPoints.length)return;const pts=tempPoints.map(p=>`${p.x},${p.y}`).join(' '),isLed=drawMode.type==='ledstrip';drawLayer.innerHTML=`<polyline points="${pts}" fill="${isLed?'none':'rgba(77,163,255,.12)'}" stroke="${isLed?'#ffd98a':'#72b9ff'}" stroke-width="${isLed?'.65':'.4'}" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`+tempPoints.map((p,i)=>`<circle cx="${p.x}" cy="${p.y}" r=".65" fill="${i===0?'#7dff9e':'#fff'}" stroke="#2389e8" stroke-width=".25" vector-effect="non-scaling-stroke"/>`).join('')}
+
+function render(){bg.src=project.bgData||'';objects.innerHTML='';vectorLayer.innerHTML='';project.elements.forEach(e=>{if(e.type==='room')renderRoom(e);else if(e.type==='uplight')renderUplight(e);else if(e.type==='spotlight')renderSpotlight(e);else if(e.type==='ledstrip')renderLedStrip(e);else renderHtmlObj(e)});renderList();renderProps();}
+function visibleNow(e){if(!e.visible)return true;const s=stateOf(e.entity);return !s||s.state===e.visible}
+function renderHtmlObj(e){
+  const d=document.createElement('div');
+
+  d.dataset.id=e.id;
+  d.className='obj '+e.type+(e.id===selected?' selected':'');
+  d.style.left=e.x+'%';
+  d.style.top=e.y+'%';
+
+  const st=stateOf(e.entity);
+
+  if(e.type==='entity'){
+    d.classList.toggle('on',st?.state==='on');
+    d.classList.toggle(
+      'unavailable',
+      st&&['unknown','unavailable'].includes(st.state)
+    );
+
+    d.innerHTML=entityHtmlContent(e,st);
+
+    d.style.background=
+      `rgba(10,15,22,${Number(e.pillOpacity??.84)})`;
+
+    d.style.transform=
+      `translate(-50%,-50%) scale(${Math.max(.5,(e.size||2.3)/2.3)})`;
+  }
+
+  if(e.type==='boiler'){
+    const b=boilerData(e);
+
+    d.style.width=(e.w??4.6)+'%';
+    d.style.height=(e.h??12)+'%';
+    d.style.transform='translate(-50%,-50%)';
+    d.style.background='transparent';
+    d.style.border='none';
+    d.style.boxShadow='none';
+    d.style.padding='0';
+    d.style.cursor='grab';
+
+    // Allows the value label to move outside the indicator
+    d.style.overflow='visible';
+
+    const pctX=Number(e.percentX??50);
+    const pctY=Number(e.percentY??-12);
+    const pctOpacity=Number(e.percentOpacity??1);
+    const pctSize=Number(e.percentSize??18);
+
+    // 0% = plavo, 100% = crveno
+    const hue=Math.max(
+      0,
+      Math.min(
+        220,
+        220-(b.pct/100)*220
+      )
+    );
+
+    const water=`hsl(${hue},95%,55%)`;
+
+    d.innerHTML=`
+
+      <!-- ========================= -->
+      <!-- BATERIJA -->
+      <!-- ========================= -->
+
+      <div style="
+        position:absolute;
+
+        left:18%;
+        right:18%;
+        top:3%;
+        bottom:3%;
+
+        overflow:hidden;
+
+        border-radius:999px;
+
+        background:rgba(5,12,22,.58);
+
+        border:2px solid rgba(245,248,250,.95);
+
+        box-shadow:
+          0 5px 10px rgba(0,0,0,.48),
+          inset 2px 0 4px rgba(255,255,255,.20),
+          inset -3px 0 5px rgba(0,0,0,.22);
+
+        pointer-events:none;
+      ">
+
+        <!-- VODA -->
+        <div style="
+          position:absolute;
+          left:0;
+          right:0;
+          bottom:0;
+
+          height:${b.pct}%;
+
+          background:${water};
+
+          transition:
+            height .3s ease,
+            background .3s ease;
+
+          box-shadow:
+            inset 0 5px 8px rgba(255,255,255,.18);
+        "></div>
+
+        <!-- SJAJ -->
+        <div style="
+          position:absolute;
+          inset:0;
+
+          background:
+            linear-gradient(
+              90deg,
+              rgba(255,255,255,.26),
+              rgba(255,255,255,.05) 32%,
+              transparent 57%,
+              rgba(0,0,0,.14)
+            );
+
+          pointer-events:none;
+        "></div>
+
+      </div>
+
+
+      <!-- ========================= -->
+      <!-- VALUE LABEL - SEPARATE LAYER -->
+      <!-- NIJE UNUTAR BATERIJE -->
+      <!-- ========================= -->
+
+      <div style="
+        position:absolute;
+
+        left:${pctX}%;
+        top:${pctY}%;
+
+        transform:translate(-50%,-50%);
+
+        opacity:${pctOpacity};
+
+        z-index:50;
+
+        color:#ffffff;
+
+        font-size:${pctSize}px;
+        font-weight:900;
+        line-height:1;
+
+        white-space:nowrap;
+
+        text-shadow:
+          0 2px 4px rgba(0,0,0,1),
+          0 0 5px rgba(0,0,0,.95);
+
+        pointer-events:none;
+      ">
+        ${b.value}
+      </div>
+
+    `;
+
+
+    // RESIZE
+    if(!liveMode){
+
+      const rh=document.createElement('div');
+
+      rh.title='Drag to resize';
+
+      rh.style.position='absolute';
+      rh.style.right='-7px';
+      rh.style.bottom='-7px';
+
+      rh.style.width='15px';
+      rh.style.height='15px';
+
+      rh.style.borderRadius='50%';
+      rh.style.background='#2389e8';
+      rh.style.border='2px solid white';
+      rh.style.boxShadow='0 2px 6px rgba(0,0,0,.65)';
+      rh.style.cursor='nwse-resize';
+      rh.style.zIndex='100';
+
+      rh.onpointerdown=ev=>{
+
+        ev.preventDefault();
+        ev.stopPropagation();
+
+        selected=e.id;
+
+        const rect=stage.getBoundingClientRect();
+
+        const sx=ev.clientX;
+        const sy=ev.clientY;
+
+        const sw=Number(e.w??4.6);
+        const sh=Number(e.h??12);
+
+        const move=mv=>{
+
+          const dx=
+            (mv.clientX-sx) /
+            rect.width * 100;
+
+          const dy=
+            (mv.clientY-sy) /
+            rect.height * 100;
+
+          e.w=clamp(sw+dx*2,1.8,18);
+          e.h=clamp(sh+dy*2,4,28);
+
+          render();
+        };
+
+        const up=()=>{
+
+          window.removeEventListener(
+            'pointermove',
+            move
+          );
+
+          window.removeEventListener(
+            'pointerup',
+            up
+          );
+
+          render();
+        };
+
+        window.addEventListener(
+          'pointermove',
+          move
+        );
+
+        window.addEventListener(
+          'pointerup',
+          up
+        );
+      };
+
+      d.appendChild(rh);
+    }
+  }
+  if(e.type==='overlay'){
+    d.style.width=e.w+'%';
+    d.style.height=e.h+'%';
+    d.innerHTML=`<img src="${e.data}">`;
+  }
+
+  d.style.display=visibleNow(e)?'':'none';
+
+  d.onpointerdown=ev=>startHtmlDrag(ev,e);
+  d.onclick=ev=>handleElementClick(ev,e);
+
+  objects.appendChild(d);
+}
+function renderRoom(e){
+  const pts=(e.points||[]).map(p=>`${p.x},${p.y}`).join(' '),c=centerOf(e.points||[]),op=roomOpacity(e),show=visibleNow(e),soft=Math.max(0,Number(e.softness??1.5));
+  const g=document.createElementNS('http://www.w3.org/2000/svg','g');g.dataset.id=e.id;g.style.display=show?'':'none';
+  const light=document.createElementNS('http://www.w3.org/2000/svg','g');light.style.opacity=op;light.style.mixBlendMode='screen';light.style.pointerEvents='none';
+  const outer=document.createElementNS('http://www.w3.org/2000/svg','polygon');outer.setAttribute('points',pts);outer.setAttribute('fill',e.color||'#ffd36b');outer.setAttribute('fill-opacity','.22');outer.style.filter=`blur(${(soft*5).toFixed(1)}px)`;light.appendChild(outer);
+  const mid=document.createElementNS('http://www.w3.org/2000/svg','polygon');mid.setAttribute('points',pts);mid.setAttribute('fill',e.color||'#ffd36b');mid.setAttribute('fill-opacity','.34');mid.style.filter=`blur(${(soft*2.4).toFixed(1)}px)`;light.appendChild(mid);
+  const inner=document.createElementNS('http://www.w3.org/2000/svg','polygon');inner.setAttribute('points',pts);inner.setAttribute('fill',e.color||'#ffd36b');inner.setAttribute('fill-opacity','.18');inner.style.filter=`blur(${(soft*.65).toFixed(1)}px)`;light.appendChild(inner);
+  g.appendChild(light);
+  const hit=document.createElementNS('http://www.w3.org/2000/svg','polygon');hit.setAttribute('points',pts);hit.setAttribute('fill','#fff');hit.setAttribute('fill-opacity','0.001');hit.setAttribute('class','roomPoly'+(e.id===selected?' selected':''));hit.dataset.id=e.id;hit.addEventListener('pointerdown',ev=>startRoomDrag(ev,e));hit.addEventListener('click',ev=>handleElementClick(ev,e));g.appendChild(hit);
+  if(e.roomLabel!==false){const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',c.x);t.setAttribute('y',c.y);t.setAttribute('class','roomLabel');t.textContent=e.name||'Room';g.appendChild(t)}
+  if(e.id===selected&&!liveMode){(e.points||[]).forEach((p,i)=>{const h=document.createElementNS('http://www.w3.org/2000/svg','circle');h.setAttribute('cx',p.x);h.setAttribute('cy',p.y);h.setAttribute('r','.8');h.setAttribute('class','vertex');h.addEventListener('pointerdown',ev=>startVertexDrag(ev,e,i));h.addEventListener('click',ev=>ev.stopPropagation());g.appendChild(h)})}
+  vectorLayer.appendChild(g)
+}
+function renderUplight(e){const geo=uplightGeometry(e),show=visibleNow(e),op=lightOpacity(e),g=document.createElementNS('http://www.w3.org/2000/svg','g');g.dataset.id=e.id;g.setAttribute('class','uplightGroup');g.style.display=show?'':'none';g.style.opacity=op;const col=e.color||'#ffd58a';const glow=document.createElementNS('http://www.w3.org/2000/svg','polygon');glow.setAttribute('points',`${geo.x},${geo.y} ${geo.l.x},${geo.l.y} ${geo.r.x},${geo.r.y}`);glow.setAttribute('fill',col);glow.setAttribute('fill-opacity','.35');glow.style.filter=`blur(${Number(e.blur||4.5)}px)`;g.appendChild(glow);const trunk=document.createElementNS('http://www.w3.org/2000/svg','polygon');trunk.setAttribute('points',`${geo.x},${geo.y} ${geo.trunk1.x},${geo.trunk1.y} ${geo.trunk2.x},${geo.trunk2.y}`);trunk.setAttribute('fill',col);trunk.setAttribute('fill-opacity','.7');trunk.style.filter=`blur(${Math.max(1,Number(e.blur||4.5)*.45)}px)`;g.appendChild(trunk);const canopy=document.createElementNS('http://www.w3.org/2000/svg','ellipse');canopy.setAttribute('cx',geo.tip.x);canopy.setAttribute('cy',geo.tip.y);canopy.setAttribute('rx',Math.max(1,Number(e.spread||12)*.55));canopy.setAttribute('ry',Math.max(1,Number(e.spread||12)*.34));canopy.setAttribute('fill',col);canopy.setAttribute('fill-opacity','.28');canopy.style.filter=`blur(${Number(e.blur||4.5)*1.25}px)`;g.appendChild(canopy);const source=document.createElementNS('http://www.w3.org/2000/svg','circle');source.setAttribute('cx',e.x);source.setAttribute('cy',e.y);source.setAttribute('r','.7');source.setAttribute('class','uplightSource');g.appendChild(source);if(e.id===selected&&!liveMode){const outline=document.createElementNS('http://www.w3.org/2000/svg','polygon');outline.setAttribute('points',`${geo.x},${geo.y} ${geo.l.x},${geo.l.y} ${geo.r.x},${geo.r.y}`);outline.setAttribute('class','uplightOutline');g.appendChild(outline);const h=document.createElementNS('http://www.w3.org/2000/svg','circle');h.setAttribute('cx',geo.tip.x);h.setAttribute('cy',geo.tip.y);h.setAttribute('r','.85');h.setAttribute('class','uplightHandle');h.addEventListener('pointerdown',ev=>startUplightHandle(ev,e));g.appendChild(h)}g.addEventListener('pointerdown',ev=>startUplightDrag(ev,e));g.addEventListener('click',ev=>handleElementClick(ev,e));vectorLayer.appendChild(g)}
+function renderSpotlight(e){const geo=spotlightGeometry(e),show=visibleNow(e),op=lightOpacity(e),g=document.createElementNS('http://www.w3.org/2000/svg','g');g.dataset.id=e.id;g.setAttribute('class','uplightGroup');g.style.display=show?'':'none';g.style.opacity=op;const col=e.color||'#ffe0a0';const blur=Number(e.blur||3.6);const outer=document.createElementNS('http://www.w3.org/2000/svg','polygon');outer.setAttribute('points',`${geo.x},${geo.y} ${geo.l.x},${geo.l.y} ${geo.r.x},${geo.r.y}`);outer.setAttribute('fill',col);outer.setAttribute('fill-opacity','.28');outer.style.filter=`blur(${blur}px)`;g.appendChild(outer);const mid=document.createElementNS('http://www.w3.org/2000/svg','polygon');mid.setAttribute('points',`${geo.x},${geo.y} ${geo.l.x},${geo.l.y} ${geo.r.x},${geo.r.y}`);mid.setAttribute('fill',col);mid.setAttribute('fill-opacity','.16');mid.style.filter=`blur(${Math.max(.4,blur*.45)}px)`;g.appendChild(mid);const core=document.createElementNS('http://www.w3.org/2000/svg','polygon');core.setAttribute('points',`${geo.x},${geo.y} ${geo.il.x},${geo.il.y} ${geo.ir.x},${geo.ir.y}`);core.setAttribute('fill',col);core.setAttribute('fill-opacity','.22');core.style.filter=`blur(${Math.max(.2,blur*.2)}px)`;g.appendChild(core);const source=document.createElementNS('http://www.w3.org/2000/svg','circle');source.setAttribute('cx',e.x);source.setAttribute('cy',e.y);source.setAttribute('r','.45');source.setAttribute('fill',col);source.setAttribute('fill-opacity','.75');g.appendChild(source);if(e.id===selected&&!liveMode){const outline=document.createElementNS('http://www.w3.org/2000/svg','polygon');outline.setAttribute('points',`${geo.x},${geo.y} ${geo.l.x},${geo.l.y} ${geo.r.x},${geo.r.y}`);outline.setAttribute('class','uplightOutline');g.appendChild(outline);const h=document.createElementNS('http://www.w3.org/2000/svg','circle');h.setAttribute('cx',geo.tip.x);h.setAttribute('cy',geo.tip.y);h.setAttribute('r','.85');h.setAttribute('class','uplightHandle');h.addEventListener('pointerdown',ev=>startUplightHandle(ev,e));g.appendChild(h)}g.addEventListener('pointerdown',ev=>startUplightDrag(ev,e));g.addEventListener('click',ev=>handleElementClick(ev,e));vectorLayer.appendChild(g)}
+function renderLedStrip(e){
+  const pts=(e.points||[]).map(p=>`${p.x},${p.y}`).join(' '),show=visibleNow(e),op=lightOpacity(e),col=lightColor(e,stateOf(e.entity)),width=Math.max(.05,Number(e.width??.45)),glow=Math.max(width,Number(e.glowWidth??2)),blur=Math.max(0,Number(e.blur??2.8)),g=document.createElementNS('http://www.w3.org/2000/svg','g');
+  g.dataset.id=e.id;g.setAttribute('class','ledStripGroup');g.style.display=show?'':'none';
+  const light=document.createElementNS('http://www.w3.org/2000/svg','g');light.style.opacity=op;light.style.mixBlendMode='screen';light.style.pointerEvents='none';
+  if(e.spillEnabled!==false){
+    const spread=Math.max(.15,Number(e.spillSpread??2.8)),spillOp=clamp(Number(e.spillOpacity??.46),0,1),spillBlur=Math.max(0,Number(e.spillBlur??4.2));
+    ledSpillLayers().forEach(L=>{const v=ledSpillVector(e,L.t),p=document.createElementNS('http://www.w3.org/2000/svg','polyline');p.setAttribute('points',pts);p.setAttribute('fill','none');p.setAttribute('stroke',col);p.setAttribute('stroke-width',Math.max(width,spread*L.w));p.setAttribute('stroke-linecap','round');p.setAttribute('stroke-linejoin','round');p.setAttribute('stroke-opacity',(spillOp*L.o).toFixed(3));p.setAttribute('transform',`translate(${v.x.toFixed(3)} ${v.y.toFixed(3)})`);p.style.filter=`blur(${(spillBlur*L.b).toFixed(2)}px)`;light.appendChild(p)});
+  }
+  const outer=document.createElementNS('http://www.w3.org/2000/svg','polyline');outer.setAttribute('points',pts);outer.setAttribute('fill','none');outer.setAttribute('stroke',col);outer.setAttribute('stroke-width',glow);outer.setAttribute('stroke-linecap','round');outer.setAttribute('stroke-linejoin','round');outer.setAttribute('stroke-opacity','.34');outer.style.filter=`blur(${blur}px)`;light.appendChild(outer);
+  const mid=document.createElementNS('http://www.w3.org/2000/svg','polyline');mid.setAttribute('points',pts);mid.setAttribute('fill','none');mid.setAttribute('stroke',col);mid.setAttribute('stroke-width',Math.max(width*2.2,glow*.45));mid.setAttribute('stroke-linecap','round');mid.setAttribute('stroke-linejoin','round');mid.setAttribute('stroke-opacity','.48');mid.style.filter=`blur(${Math.max(.2,blur*.35)}px)`;light.appendChild(mid);
+  const core=document.createElementNS('http://www.w3.org/2000/svg','polyline');core.setAttribute('points',pts);core.setAttribute('fill','none');core.setAttribute('stroke',col);core.setAttribute('stroke-width',width);core.setAttribute('stroke-linecap','round');core.setAttribute('stroke-linejoin','round');core.setAttribute('stroke-opacity','.95');light.appendChild(core);g.appendChild(light);
+  const hit=document.createElementNS('http://www.w3.org/2000/svg','polyline');hit.setAttribute('points',pts);hit.setAttribute('class','ledStripHit');hit.setAttribute('stroke-width',Math.max(2.2,glow*1.5));hit.setAttribute('stroke-linecap','round');hit.setAttribute('stroke-linejoin','round');hit.addEventListener('pointerdown',ev=>startRoomDrag(ev,e));hit.addEventListener('click',ev=>handleElementClick(ev,e));g.appendChild(hit);
+  if(e.id===selected&&!liveMode){
+    const guide=document.createElementNS('http://www.w3.org/2000/svg','polyline');guide.setAttribute('points',pts);guide.setAttribute('class','ledStripGuide');guide.setAttribute('stroke-linecap','round');guide.setAttribute('stroke-linejoin','round');g.appendChild(guide);
+    if(e.spillEnabled!==false){const c=centerOf(e.points||[]),v=ledSpillVector(e,1),ln=document.createElementNS('http://www.w3.org/2000/svg','line');ln.setAttribute('x1',c.x);ln.setAttribute('y1',c.y);ln.setAttribute('x2',c.x+v.x);ln.setAttribute('y2',c.y+v.y);ln.setAttribute('class','ledSpillGuide');g.appendChild(ln);const tip=document.createElementNS('http://www.w3.org/2000/svg','circle');tip.setAttribute('cx',c.x+v.x);tip.setAttribute('cy',c.y+v.y);tip.setAttribute('r','.55');tip.setAttribute('fill','#6ee7ff');tip.setAttribute('pointer-events','none');g.appendChild(tip)}
+    ;(e.points||[]).forEach((p,i)=>{const h=document.createElementNS('http://www.w3.org/2000/svg','circle');h.setAttribute('cx',p.x);h.setAttribute('cy',p.y);h.setAttribute('r','.8');h.setAttribute('class','vertex');h.addEventListener('pointerdown',ev=>startVertexDrag(ev,e,i));h.addEventListener('click',ev=>ev.stopPropagation());g.appendChild(h)})
+  }
+  vectorLayer.appendChild(g)
+}
+function handleElementClick(ev,e){ev.stopPropagation();if(liveMode){executeLiveAction(e);return}selected=e.id;render()}
+function startHtmlDrag(ev,e){if(liveMode)return;ev.stopPropagation();selected=e.id;const r=stage.getBoundingClientRect();drag={kind:'html',id:e.id,sx:ev.clientX,sy:ev.clientY,x:e.x,y:e.y,w:r.width,h:r.height};window.addEventListener('pointermove',moveDrag);window.addEventListener('pointerup',endDrag,{once:true});renderList();renderProps()}
+function startRoomDrag(ev,e){if(liveMode)return;ev.stopPropagation();selected=e.id;const r=stage.getBoundingClientRect();drag={kind:'room',id:e.id,sx:ev.clientX,sy:ev.clientY,points:e.points.map(p=>({...p})),w:r.width,h:r.height};window.addEventListener('pointermove',moveDrag);window.addEventListener('pointerup',endDrag,{once:true});renderList();renderProps()}
+function startUplightDrag(ev,e){if(liveMode||ev.target.classList.contains('uplightHandle'))return;ev.stopPropagation();selected=e.id;const r=stage.getBoundingClientRect();drag={kind:'uplight',id:e.id,sx:ev.clientX,sy:ev.clientY,x:e.x,y:e.y,w:r.width,h:r.height};window.addEventListener('pointermove',moveDrag);window.addEventListener('pointerup',endDrag,{once:true});renderList();renderProps()}
+function moveDrag(ev){if(!drag)return;const e=project.elements.find(x=>x.id===drag.id),dx=(ev.clientX-drag.sx)/drag.w*100,dy=(ev.clientY-drag.sy)/drag.h*100;if(drag.kind==='room')e.points=drag.points.map(p=>({x:clamp(p.x+dx,0,100),y:clamp(p.y+dy,0,100)}));else{e.x=clamp(drag.x+dx,0,100);e.y=clamp(drag.y+dy,0,100)}render()}
+function endDrag(){window.removeEventListener('pointermove',moveDrag);drag=null;render()}
+function startVertexDrag(ev,e,i){if(liveMode)return;ev.stopPropagation();vertexDrag={id:e.id,i};window.addEventListener('pointermove',moveVertex);window.addEventListener('pointerup',endVertex,{once:true})}
+function moveVertex(ev){if(!vertexDrag)return;const e=project.elements.find(x=>x.id===vertexDrag.id),p=percentPoint(ev);e.points[vertexDrag.i]=p;render()}
+function endVertex(){window.removeEventListener('pointermove',moveVertex);vertexDrag=null;render()}
+function startUplightHandle(ev,e){ev.stopPropagation();uplinkDrag={id:e.id};window.addEventListener('pointermove',moveUplightHandle);window.addEventListener('pointerup',endUplightHandle,{once:true})}
+function moveUplightHandle(ev){const e=project.elements.find(x=>x.id===uplinkDrag?.id);if(!e)return;const p=percentPoint(ev),dx=p.x-e.x,dy=p.y-e.y;e.length=clamp(Math.hypot(dx,dy),2,60);e.angle=Math.atan2(dy,dx)*180/Math.PI+90;render()}
+function endUplightHandle(){window.removeEventListener('pointermove',moveUplightHandle);uplinkDrag=null;render()}
+
+function renderList(){const l=$('#list');l.innerHTML='';project.elements.forEach(e=>{const d=document.createElement('div');d.className='item'+(e.id===selected?' active':'');d.innerHTML=`<span>${e.type==='boiler'?'🚿':e.type==='entity'?'●':e.type==='room'?'⬡':e.type==='uplight'?'🌳':e.type==='spotlight'?'🔦':e.type==='ledstrip'?'〰️':'▧'}</span><span class="name">${html(e.name||e.id)}</span>`;d.onclick=()=>{selected=e.id;render()};l.appendChild(d)})}
+function renderProps(){const e=el();$('#none').classList.toggle('hidden',!!e);$('#form').classList.toggle('hidden',!e);if(!e)return;$('#pName').value=e.name||'';$('#pId').value=e.id||'';$('#pType').value=e.type;$('#pEntity').value=e.entity||'';$('#pAction').value=e.action||'none';$('#pActionEntity').value=e.actionEntity||'';$('#pService').value=e.service||'';$('#pTarget').value=e.target||'';$('#pVisible').value=e.visible||'';const st=stateOf(e.entity);$('#liveState').textContent=st?`Live: ${st.state}${Number.isFinite(st.attributes?.brightness)?` • brightness ${Math.round(st.attributes.brightness/255*100)}%`:''}`:'';$('#entityBox').classList.toggle('hidden',e.type!=='entity');$('#roomBox').classList.toggle('hidden',e.type!=='room');$('#uplightBox').classList.toggle('hidden',e.type!=='uplight');$('#boilerBox').classList.toggle('hidden',e.type!=='boiler');$('#spotlightBox').classList.toggle('hidden',e.type!=='spotlight');$('#ledStripBox').classList.toggle('hidden',e.type!=='ledstrip');$('#overlayBox').classList.toggle('hidden',e.type!=='overlay');$('#serviceBox').classList.toggle('hidden',e.action!=='call-service');if(e.type==='entity'){$('#pSymbol').value=e.symbol||'';$('#pIconPreset').value='';$('#pDisplayMode').value=entityDisplayMode(e);$('#pDecimals').value=String(e.decimals??1);$('#pUnitMode').value=e.unitMode??'auto';$('#pSize').value=e.size??2.3;syncPair('pIconOpacity','pIconOpacityN',e.iconOpacity??1);syncPair('pTextOpacity','pTextOpacityN',e.textOpacity??1);syncPair('pPillOpacity','pPillOpacityN',e.pillOpacity??.84);$('#pX').value=(e.x??50).toFixed(1);$('#pY').value=(e.y??50).toFixed(1)}if(e.type==='room'){$('#pColor').value=e.color||'#ffd36b';syncPair('pOffOpacity','pOffOpacityN',e.offOpacity??0);syncPair('pOnOpacity','pOnOpacityN',e.onOpacity??.34);syncPair('pRoomSoftness','pRoomSoftnessN',e.softness??1.5);$('#pFollowBrightness').checked=e.followBrightness!==false;syncPair('pPreviewBrightness','pPreviewBrightnessN',e.previewBrightness??100);$('#pRoomLabel').checked=e.roomLabel!==false}if(e.type==='uplight'){$('#pUColor').value=e.color||'#ffd58a';$('#pULength').value=e.length??18;$('#pUSpread').value=e.spread??13;$('#pUAngle').value=e.angle??0;syncPair('pUOff','pUOffN',e.offOpacity??0);syncPair('pUOn','pUOnN',e.onOpacity??.72);syncPair('pUBlur','pUBlurN',e.blur??4.5);$('#pUFollow').checked=e.followBrightness!==false;$('#pUX').value=(e.x??50).toFixed(1);$('#pUY').value=(e.y??50).toFixed(1)}if(e.type==='boiler'){syncPair('pBPctOpacity','pBPctOpacityN',e.percentOpacity??1);syncPair('pBPctX','pBPctXN',e.percentX??50);syncPair('pBPctY','pBPctYN',e.percentY??50);syncPair('pBPctSize','pBPctSizeN',e.percentSize??20);}if(e.type==='spotlight'){$('#pSColor').value=e.color||'#ffe0a0';$('#pSLength').value=e.length??18;$('#pSBeam').value=e.beamAngle??45;$('#pSAngle').value=e.angle??0;syncPair('pSOff','pSOffN',e.offOpacity??0);syncPair('pSOn','pSOnN',e.onOpacity??.72);syncPair('pSBlur','pSBlurN',e.blur??3.6);$('#pSFollow').checked=e.followBrightness!==false;$('#pSX').value=(e.x??50).toFixed(1);$('#pSY').value=(e.y??50).toFixed(1)}if(e.type==='ledstrip'){$('#pLColor').value=e.color||'#ffd98a';$('#pLWidth').value=e.width??.45;$('#pLGlow').value=e.glowWidth??2;syncPair('pLOff','pLOffN',e.offOpacity??0);syncPair('pLOn','pLOnN',e.onOpacity??.82);syncPair('pLBlur','pLBlurN',e.blur??2.8);$('#pLFollow').checked=e.followBrightness!==false;$('#pLFollowColor').checked=e.followColor!==false;$('#pLSpillEnabled').checked=e.spillEnabled!==false;$('#pLSpillDirection').value=e.spillDirection||'down';$('#pLSpillAngle').value=e.spillAngle??90;$('#pLSpillDepth').value=e.spillDepth??5;$('#pLSpillSpread').value=e.spillSpread??2.8;syncPair('pLSpillOpacity','pLSpillOpacityN',e.spillOpacity??.46);syncPair('pLSpillBlur','pLSpillBlurN',e.spillBlur??4.2)}if(e.type==='overlay'){$('#pOW').value=e.w??20;$('#pOH').value=e.h??10;$('#pOX').value=(e.x??50).toFixed(1);$('#pOY').value=(e.y??50).toFixed(1)}}
+function syncPair(a,b,v){$('#'+a).value=v;$('#'+b).value=v}
+const textBinds={pName:'name',pEntity:'entity',pActionEntity:'actionEntity',pService:'service',pTarget:'target',pVisible:'visible',pSymbol:'symbol'};Object.entries(textBinds).forEach(([id,k])=>$('#'+id).oninput=ev=>{const e=el();if(!e)return;e[k]=ev.target.value;render()});
+$('#pIconPreset').onchange=ev=>{const e=el();if(!e||!ev.target.value)return;e.symbol=ev.target.value;$('#pSymbol').value=e.symbol;render()};$('#pDisplayMode').onchange=ev=>{const e=el();if(e){e.displayMode=ev.target.value;render()}};$('#pDecimals').onchange=ev=>{const e=el();if(e){e.decimals=Number(ev.target.value);render()}};$('#pUnitMode').onchange=ev=>{const e=el();if(e){e.unitMode=ev.target.value;render()}};
+$('#pId').onchange=ev=>{const e=el();if(!e)return;const old=e.id,n=safe(ev.target.value||old);if(project.elements.some(x=>x!==e&&x.id===n)){toast('ID već postoji');ev.target.value=old;return}e.id=n;selected=n;render()};
+$('#pAction').onchange=ev=>{const e=el();if(!e)return;e.action=ev.target.value;renderProps()};$('#pFollowBrightness').onchange=ev=>{const e=el();if(e){e.followBrightness=ev.target.checked;render()}};$('#pRoomLabel').onchange=ev=>{const e=el();if(e){e.roomLabel=ev.target.checked;render()}};$('#pUFollow').onchange=ev=>{const e=el();if(e){e.followBrightness=ev.target.checked;render()}};$('#pSFollow').onchange=ev=>{const e=el();if(e){e.followBrightness=ev.target.checked;render()}};$('#pLFollow').onchange=ev=>{const e=el();if(e){e.followBrightness=ev.target.checked;render()}};$('#pLFollowColor').onchange=ev=>{const e=el();if(e){e.followColor=ev.target.checked;render()}};$('#pLSpillEnabled').onchange=ev=>{const e=el();if(e){e.spillEnabled=ev.target.checked;render()}};$('#pLSpillDirection').onchange=ev=>{const e=el();if(e){e.spillDirection=ev.target.value;render()}};
+[['pX','x'],['pY','y'],['pSize','size'],['pOW','w'],['pOH','h'],['pOX','x'],['pOY','y'],['pULength','length'],['pUSpread','spread'],['pUAngle','angle'],['pUX','x'],['pUY','y'],['pSLength','length'],['pSBeam','beamAngle'],['pSAngle','angle'],['pSX','x'],['pSY','y'],['pLWidth','width'],['pLGlow','glowWidth'],['pLSpillAngle','spillAngle'],['pLSpillDepth','spillDepth'],['pLSpillSpread','spillSpread']].forEach(([id,k])=>$('#'+id).oninput=ev=>{const e=el();if(!e)return;const v=parseFloat(ev.target.value);if(Number.isFinite(v)){e[k]=v;render()}});
+$('#pColor').oninput=ev=>{const e=el();if(e){e.color=ev.target.value;render()}};$('#pUColor').oninput=ev=>{const e=el();if(e){e.color=ev.target.value;render()}};$('#pSColor').oninput=ev=>{const e=el();if(e){e.color=ev.target.value;render()}};$('#pLColor').oninput=ev=>{const e=el();if(e){e.color=ev.target.value;render()}};
+function bindPair(a,b,k){const f=ev=>{const e=el();if(!e)return;const v=parseFloat(ev.target.value);if(!Number.isFinite(v))return;e[k]=v;syncPair(a,b,v);render()};$('#'+a).oninput=f;$('#'+b).oninput=f}bindPair('pOffOpacity','pOffOpacityN','offOpacity');bindPair('pOnOpacity','pOnOpacityN','onOpacity');bindPair('pRoomSoftness','pRoomSoftnessN','softness');bindPair('pPreviewBrightness','pPreviewBrightnessN','previewBrightness');bindPair('pUOff','pUOffN','offOpacity');bindPair('pUOn','pUOnN','onOpacity');bindPair('pUBlur','pUBlurN','blur');bindPair('pIconOpacity','pIconOpacityN','iconOpacity');bindPair('pTextOpacity','pTextOpacityN','textOpacity');bindPair('pPillOpacity','pPillOpacityN','pillOpacity');bindPair('pBPctOpacity','pBPctOpacityN','percentOpacity');bindPair('pBPctX','pBPctXN','percentX');bindPair('pBPctY','pBPctYN','percentY');bindPair('pBPctSize','pBPctSizeN','percentSize');bindPair('pSOff','pSOffN','offOpacity');bindPair('pSOn','pSOnN','onOpacity');bindPair('pSBlur','pSBlurN','blur');bindPair('pLOff','pLOffN','offOpacity');bindPair('pLOn','pLOnN','onOpacity');bindPair('pLBlur','pLBlurN','blur');bindPair('pLSpillOpacity','pLSpillOpacityN','spillOpacity');bindPair('pLSpillBlur','pLSpillBlurN','spillBlur');
+$('#delete').onclick=del;function del(){if(!selected)return;project.elements=project.elements.filter(x=>x.id!==selected);selected=null;render()}
+document.addEventListener('keydown',ev=>{if(ev.key==='Escape'&&drawMode){cancelDraw();return}if(ev.key==='Enter'&&drawMode){finishCurrentDraw();return}if((ev.key==='Delete'||ev.key==='Backspace')&&selected&&!['INPUT','TEXTAREA'].includes(document.activeElement.tagName)){ev.preventDefault();del()}if((ev.ctrlKey||ev.metaKey)&&ev.key.toLowerCase()==='s'){ev.preventDefault();saveProject()}});
+
+$('#modeBtn').onclick=()=>{liveMode=!liveMode;if(liveMode&&drawMode)cancelDraw();updateModeBtn();render()};function updateModeBtn(){const b=$('#modeBtn');b.textContent=liveMode?'▶ LIVE / TEST':'✏️ EDIT';b.classList.toggle('modeLive',liveMode)}
+async function executeLiveAction(e){if(!e.entity){toast('Element has no Home Assistant entity');return}if(e.action==='none'){toast('Action is disabled');return}const actionEntity=e.actionEntity||e.entity;if(e.action==='more-info'){const st=stateOf(actionEntity);alert(`${e.name||actionEntity}\n${actionEntity}\nState: ${st?.state??'unknown'}`);return}let service='homeassistant.toggle',target=actionEntity;if(e.action==='call-service'){service=e.service||'homeassistant.toggle';target=e.target||actionEntity}try{const r=await fetch('/api/ha/service',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url:$('#haUrl').value.trim(),token:$('#haToken').value.trim(),service,entity_id:target})});const j=await r.json();if(!r.ok)throw new Error(j.error||'Error');toast('Action sent');setTimeout(()=>haFetchSilent($('#haUrl').value.trim(),$('#haToken').value.trim()),350)}catch(err){toast('Error: '+err.message)}}
+
+async function haFetch(){const url=$('#haUrl').value.trim().replace(/\/$/,'');const token=$('#haToken').value.trim();if(!url||!token){setHaStatus(false,'Enter Home Assistant URL and token');return}sessionStorage.setItem('ha_floorplan_v1_url',url);sessionStorage.setItem('ha_floorplan_v1_token',token);try{setHaStatus(null,'Connecting...');const r=await fetch('/api/ha/states',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,token})});const j=await r.json();if(!r.ok)throw new Error(j.error||('HTTP '+r.status));haStates=Array.isArray(j)?j:[];haMap=new Map(haStates.map(s=>[s.entity_id,s]));setHaStatus(true,`Connected • ${haStates.length} entities`);buildDomains();buildDatalist();renderHaList();render();if(haTimer)clearInterval(haTimer);haTimer=setInterval(()=>haFetchSilent(url,token),4000)}catch(err){setHaStatus(false,'Error: '+err.message)}}
+async function haFetchSilent(url,token){if(!url||!token)return;try{const r=await fetch('/api/ha/states',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({url,token})});if(!r.ok)return;const j=await r.json();haStates=Array.isArray(j)?j:[];haMap=new Map(haStates.map(s=>[s.entity_id,s]));renderHaList();render()}catch{}}
+function setHaStatus(ok,text){$('#haStatus').textContent=text;$('#haDot').className='statusDot'+(ok===true?' ok':ok===false?' bad':'')}
+$('#haConnect').onclick=haFetch;$('#haDisconnect').onclick=()=>{haStates=[];haMap=new Map();if(haTimer)clearInterval(haTimer);haTimer=null;sessionStorage.removeItem('ha_token');$('#haToken').value='';setHaStatus(null,'Odspojeno');renderHaList();render()};$('#haSearch').oninput=renderHaList;$('#haDomain').onchange=renderHaList;
+function buildDomains(){const sel=$('#haDomain'),current=sel.value,ds=[...new Set(haStates.map(s=>s.entity_id.split('.')[0]))].sort();sel.innerHTML='<option value="">All</option>'+ds.map(d=>`<option value="${html(d)}">${html(d)}</option>`).join('');if(ds.includes(current))sel.value=current}
+function buildDatalist(){$('#entityOptions').innerHTML=haStates.slice().sort((a,b)=>friendly(a).localeCompare(friendly(b))).map(s=>`<option value="${html(s.entity_id)}">${html(friendly(s))}</option>`).join('')}
+function renderHaList(){const q=$('#haSearch').value.trim().toLowerCase(),dom=$('#haDomain').value,l=$('#haList');if(!haStates.length){l.innerHTML='<div class="small">Connect to Home Assistant to load entities.</div>';return}const arr=haStates.filter(s=>(!dom||s.entity_id.startsWith(dom+'.'))&&(!q||s.entity_id.toLowerCase().includes(q)||friendly(s).toLowerCase().includes(q))).slice(0,120);l.innerHTML='';arr.forEach(s=>{const d=document.createElement('div');d.className='haItem';const b=Number.isFinite(s.attributes?.brightness)?` • ${Math.round(s.attributes.brightness/255*100)}%`:'';d.innerHTML=`<div class="haTop"><span>${domainSymbol(s.entity_id)}</span><span class="haName">${html(friendly(s))}</span><span class="haState">${html(s.state)}${b}</span></div><div class="haId">${html(s.entity_id)}</div><div class="haBtns"><button class="tiny add">Add</button><button class="tiny link" ${selected?'':'disabled'}>Link to Selected</button></div>`;d.querySelector('.add').onclick=()=>addEntity(s.entity_id);d.querySelector('.link').onclick=()=>{const e=el();if(!e)return;e.entity=s.entity_id;if(!e.name||['Room','New Entity','Uplight','Spotlight','LED Strip','Level Indicator'].includes(e.name))e.name=friendly(s);if(e.type==='entity'){e.symbol=domainSymbol(s.entity_id);if(!e.displayMode)e.displayMode=s.entity_id.startsWith('sensor.')?'icon_value':'icon_name';if(e.decimals==null)e.decimals=1;if(!e.unitMode)e.unitMode='auto'}render();toast('Linked: '+s.entity_id)};l.appendChild(d)})}
+
+function exportSvg(){const W=1000,H=W*(project.bgHeight/project.bgWidth),o=[],fit=project.screenFit||'contain',par=fit==='cover'?'xMidYMid slice':fit==='stretch'?'none':'xMidYMid meet';o.push('<?xml version="1.0" encoding="UTF-8"?>');o.push(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H.toFixed(3)}" width="100%" height="100%" preserveAspectRatio="${par}">`);o.push('<defs>');project.elements.filter(e=>e.type==='uplight'||e.type==='spotlight'||e.type==='ledstrip').forEach(e=>{const id=xml(e.id);o.push(`<filter id="${id}__blur" x="-80%" y="-80%" width="260%" height="260%"><feGaussianBlur stdDeviation="${Math.max(.5,Number(e.blur||4.5))}"/></filter>`);if(e.type==='ledstrip')o.push(`<filter id="${id}__spill_blur" x="-120%" y="-120%" width="340%" height="340%"><feGaussianBlur stdDeviation="${Math.max(.5,Number(e.spillBlur??4.2))}"/></filter>`)});project.elements.filter(e=>e.type==='room').forEach(e=>{const id=xml(e.id),soft=Math.max(.25,Number(e.softness??1.5)/100*W);o.push(`<filter id="${id}__soft_outer" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="${soft.toFixed(2)}"/></filter>`);o.push(`<filter id="${id}__soft_mid" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="${(soft*.45).toFixed(2)}"/></filter>`)});o.push('</defs>');o.push('<rect width="100%" height="100%" fill="#05070a"/>');if(project.bgData)o.push(`<image id="background" href="${project.bgData}" x="0" y="0" width="${W}" height="${H}" preserveAspectRatio="none"/>`);project.elements.forEach(e=>{if(e.type==='entity'){const x=e.x/100*W,y=e.y/100*H,r=(e.size||2.3)/100*W,mode=entityDisplayMode(e),name=e.name||e.entity||e.id,st=stateOf(e.entity),value=formattedEntityState(e,st),showIcon=!['name_value','value_only'].includes(mode),showName=['icon_name','icon_name_value','name_value'].includes(mode),showValue=['icon_value','icon_name_value','name_value','value_only'].includes(mode),textX=showIcon?x+r*1.45:x,baseFont=Math.max(11,r*.72),wText=Math.max(showName?name.length*baseFont*.58:0,showValue?Math.max(4,value.length)*baseFont*.62:0),pillW=(showIcon?r*2.35:12)+wText+18,pillH=mode.includes('name_value')||mode==='icon_name_value'?r*2.45:r*2.05,pillX=showIcon?x-r*1.18:x-pillW/2,pillY=y-pillH/2;o.push(`<g id="${xml(e.id)}" style="cursor:pointer"><rect x="${pillX.toFixed(2)}" y="${pillY.toFixed(2)}" width="${pillW.toFixed(2)}" height="${pillH.toFixed(2)}" rx="${(pillH/2).toFixed(2)}" fill="#0a0f16" fill-opacity="${Number(e.pillOpacity??.84).toFixed(3)}" stroke="#fff" stroke-opacity="${Math.min(Number(e.pillOpacity??.84),.35).toFixed(3)}"/>${showIcon?`<circle id="${xml(e.id)}__dot" cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="${r.toFixed(2)}" fill="#596776" stroke="#fff" stroke-opacity=".55" opacity="${Number(e.iconOpacity??1).toFixed(3)}"/><text x="${x.toFixed(2)}" y="${(y+r*.28).toFixed(2)}" text-anchor="middle" font-size="${(r*1.05).toFixed(2)}" font-family="system-ui" opacity="${Number(e.iconOpacity??1).toFixed(3)}">${xml(e.symbol||'•')}</text>`:''}${showValue?`<text id="${xml(e.id)}__value" x="${textX.toFixed(2)}" y="${(showName?y-r*.08:y+r*.26).toFixed(2)}" text-anchor="${showIcon?'start':'middle'}" font-size="${baseFont.toFixed(2)}" font-weight="700" font-family="system-ui" fill="#fff" opacity="${Number(e.textOpacity??1).toFixed(3)}">${xml(value)}</text>`:''}${showName?`<text id="${xml(e.id)}__name" x="${textX.toFixed(2)}" y="${(showValue?y+r*.72:y+r*.26).toFixed(2)}" text-anchor="${showIcon?'start':'middle'}" font-size="${(baseFont*.72).toFixed(2)}" font-family="system-ui" fill="#b8c6d6" opacity="${Number(e.textOpacity??1).toFixed(3)}">${xml(name)}</text>`:''}</g>`)}else if(e.type==='boiler'){
+
+  const x=e.x/100*W;
+  const y=e.y/100*H;
+
+  const w=(e.w??4.6)/100*W;
+  const h=(e.h??12)/100*H;
+
+  const id=xml(e.id);
+  const b=boilerData(e);
+
+  const shellW=w*.64;
+  const shellH=h*.94;
+
+  const shellX=x-shellW/2;
+  const shellY=y-shellH/2;
+
+  const radius=Math.min(
+    shellW*.50,
+    shellH*.18
+  );
+
+  const pctX=
+    x+((Number(e.percentX??50)-50)/100)*w;
+
+  const pctY=
+    y+((Number(e.percentY??50)-50)/100)*h;
+
+  const pctSize=
+    Math.max(8,Number(e.percentSize??18));
+
+  const pctOpacity=
+    clamp(Number(e.percentOpacity??1),0,1);
+
+  const hue=
+    Math.max(
+      0,
+      Math.min(
+        220,
+        220-(b.pct/100)*220
+      )
+    );
+
+  const water=
+    `hsl(${hue},95%,55%)`;
+
+  let segs='';
+
+  for(let i=0;i<20;i++){
+
+    const low=i*5;
+
+    const op=b.valid
+      ? clamp((b.pct-low)/5,0,1)
+      : 0;
+
+    const sy=
+      shellY+
+      shellH-
+      ((i+1)*shellH/20);
+
+    const sh=
+      shellH/20+.6;
+
+    const sn=
+      String(i+1).padStart(2,'0');
+
+    segs+=`
+      <rect
+        id="${id}__seg${sn}"
+        x="${shellX.toFixed(2)}"
+        y="${sy.toFixed(2)}"
+        width="${shellW.toFixed(2)}"
+        height="${sh.toFixed(2)}"
+        fill="${water}"
+        opacity="${op.toFixed(3)}"
+      />
+    `;
+  }
+
+  o.push(`
+
+    <g id="${id}" style="cursor:pointer">
+
+      <defs>
+
+        <clipPath id="${id}__clip">
+
+          <rect
+            x="${shellX.toFixed(2)}"
+            y="${shellY.toFixed(2)}"
+            width="${shellW.toFixed(2)}"
+            height="${shellH.toFixed(2)}"
+            rx="${radius.toFixed(2)}"
+          />
+
+        </clipPath>
+
+      </defs>
+
+
+      <!-- PRAZNA KAPSULA -->
+
+      <rect
+        x="${shellX.toFixed(2)}"
+        y="${shellY.toFixed(2)}"
+        width="${shellW.toFixed(2)}"
+        height="${shellH.toFixed(2)}"
+        rx="${radius.toFixed(2)}"
+
+        fill="#07111c"
+        fill-opacity=".62"
+
+        stroke="#f5f8fa"
+        stroke-opacity=".95"
+        stroke-width="2"
+      />
+
+
+      <!-- VODA -->
+
+      <g clip-path="url(#${id}__clip)">
+        ${segs}
+
+        <rect
+          x="${shellX.toFixed(2)}"
+          y="${shellY.toFixed(2)}"
+          width="${(shellW*.22).toFixed(2)}"
+          height="${shellH.toFixed(2)}"
+
+          fill="#ffffff"
+          fill-opacity=".10"
+        />
+      </g>
+
+
+      <!-- OKVIR -->
+
+      <rect
+        x="${shellX.toFixed(2)}"
+        y="${shellY.toFixed(2)}"
+        width="${shellW.toFixed(2)}"
+        height="${shellH.toFixed(2)}"
+        rx="${radius.toFixed(2)}"
+
+        fill="none"
+
+        stroke="#ffffff"
+        stroke-opacity=".90"
+        stroke-width="2"
+      />
+
+
+      <!-- VALUE LABEL - SEPARATE LAYER -->
+
+      <text
+        id="${id}__value"
+
+        x="${pctX.toFixed(2)}"
+        y="${pctY.toFixed(2)}"
+
+        text-anchor="middle"
+        dominant-baseline="middle"
+
+        font-family="system-ui"
+        font-size="${pctSize.toFixed(2)}"
+        font-weight="900"
+
+        fill="#ffffff"
+        opacity="${pctOpacity.toFixed(3)}"
+
+        stroke="#000000"
+        stroke-opacity=".85"
+        stroke-width="2"
+        paint-order="stroke"
+      >
+        ${xml(b.value)}
+      </text>
+
+    </g>
+  `);
+
+}else if(e.type==='overlay'){const x=e.x/100*W,y=e.y/100*H,w=e.w/100*W,h=e.h/100*H;o.push(`<g id="${xml(e.id)}" style="cursor:pointer"><image href="${e.data}" x="${(x-w/2).toFixed(2)}" y="${(y-h/2).toFixed(2)}" width="${w.toFixed(2)}" height="${h.toFixed(2)}" preserveAspectRatio="xMidYMid meet"/></g>`)}else if(e.type==='room'){const pts=(e.points||[]).map(p=>`${(p.x/100*W).toFixed(2)},${(p.y/100*H).toFixed(2)}`).join(' '),c=centerOf(e.points||[]),cx=c.x/100*W,cy=c.y/100*H,id=xml(e.id),col=e.color||'#ffd36b',off=Number(e.offOpacity??0).toFixed(3);o.push(`<g id="${id}" style="cursor:pointer"><g id="${id}__light" opacity="${off}" style="mix-blend-mode:screen;pointer-events:none"><polygon points="${pts}" fill="${col}" fill-opacity=".22" filter="url(#${id}__soft_outer)"/><polygon points="${pts}" fill="${col}" fill-opacity=".34" filter="url(#${id}__soft_mid)"/><polygon points="${pts}" fill="${col}" fill-opacity=".18"/></g><polygon id="${id}__hit" points="${pts}" fill="#fff" fill-opacity="0.001" style="pointer-events:all"/>${e.roomLabel!==false?`<text x="${cx.toFixed(2)}" y="${cy.toFixed(2)}" text-anchor="middle" dominant-baseline="middle" font-size="14" font-family="system-ui" fill="#fff" stroke="#000" stroke-width="2" paint-order="stroke">${xml(e.name||'Room')}</text>`:''}</g>`)}else if(e.type==='uplight'){const geo=uplightGeometry(e),sx=W/100,sy=H/100,conv=p=>`${(p.x*sx).toFixed(2)},${(p.y*sy).toFixed(2)}`,col=e.color||'#ffd58a',id=xml(e.id),tipX=geo.tip.x*sx,tipY=geo.tip.y*sy,rx=Number(e.spread||12)*.55*sx,ry=Number(e.spread||12)*.34*sy;o.push(`<g id="${id}" style="cursor:pointer" opacity="${Number(e.offOpacity??0).toFixed(2)}"><polygon points="${conv({x:geo.x,y:geo.y})} ${conv(geo.l)} ${conv(geo.r)}" fill="${col}" fill-opacity=".35" filter="url(#${id}__blur)"/><polygon points="${conv({x:geo.x,y:geo.y})} ${conv(geo.trunk1)} ${conv(geo.trunk2)}" fill="${col}" fill-opacity=".8"/><ellipse cx="${tipX.toFixed(2)}" cy="${tipY.toFixed(2)}" rx="${rx.toFixed(2)}" ry="${ry.toFixed(2)}" fill="${col}" fill-opacity=".28" filter="url(#${id}__blur)"/><circle cx="${(e.x*sx).toFixed(2)}" cy="${(e.y*sy).toFixed(2)}" r="5" fill="${col}" fill-opacity=".9"/></g>`)}else if(e.type==='spotlight'){const geo=spotlightGeometry(e),sx=W/100,sy=H/100,conv=p=>`${(p.x*sx).toFixed(2)},${(p.y*sy).toFixed(2)}`,col=e.color||'#ffe0a0',id=xml(e.id);o.push(`<g id="${id}" style="cursor:pointer;mix-blend-mode:screen" opacity="${Number(e.offOpacity??0).toFixed(2)}"><polygon points="${conv({x:geo.x,y:geo.y})} ${conv(geo.l)} ${conv(geo.r)}" fill="${col}" fill-opacity=".24" filter="url(#${id}__blur)"/><polygon points="${conv({x:geo.x,y:geo.y})} ${conv(geo.l)} ${conv(geo.r)}" fill="${col}" fill-opacity=".10"/><polygon points="${conv({x:geo.x,y:geo.y})} ${conv(geo.il)} ${conv(geo.ir)}" fill="${col}" fill-opacity=".18" filter="url(#${id}__blur)"/><circle cx="${(e.x*sx).toFixed(2)}" cy="${(e.y*sy).toFixed(2)}" r="3.2" fill="${col}" fill-opacity=".8"/></g>`)}else if(e.type==='ledstrip'){
+  const sx=W/100,sy=H/100,pts=(e.points||[]).map(p=>`${(p.x*sx).toFixed(2)},${(p.y*sy).toFixed(2)}`).join(' '),col=lightColor(e,stateOf(e.entity)),id=xml(e.id),width=Math.max(.5,Number(e.width??.45)*sx),glow=Math.max(width,Number(e.glowWidth??2)*sx),hit=Math.max(14,glow*1.35),off=Number(e.offOpacity??0).toFixed(3);
+  let spill='';
+  if(e.spillEnabled!==false){const spread=Math.max(.15,Number(e.spillSpread??2.8))*sx,spillOp=clamp(Number(e.spillOpacity??.46),0,1),a=ledSpillAngle(e)*Math.PI/180,depth=Math.max(0,Number(e.spillDepth??5));ledSpillLayers().forEach(L=>{const dx=Math.cos(a)*depth*L.t*sx,dy=Math.sin(a)*depth*L.t*sy,sw=Math.max(width,spread*L.w),so=(spillOp*L.o).toFixed(3);spill+=`<polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="${sw.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="${so}" transform="translate(${dx.toFixed(2)} ${dy.toFixed(2)})" filter="url(#${id}__spill_blur)"/>`})}
+  o.push(`<g id="${id}" style="cursor:pointer"><g id="${id}__light" opacity="${off}" style="mix-blend-mode:screen;pointer-events:none;color:${col}">${spill}<polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="${glow.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".34" filter="url(#${id}__blur)"/><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="${Math.max(width*2.2,glow*.45).toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".48"/><polyline points="${pts}" fill="none" stroke="currentColor" stroke-width="${width.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" stroke-opacity=".95"/></g><polyline id="${id}__hit" points="${pts}" fill="none" stroke="#fff" stroke-opacity="0.001" stroke-width="${hit.toFixed(2)}" stroke-linecap="round" stroke-linejoin="round" style="pointer-events:stroke"/></g>`)
+}});o.push('</svg>');return o.join('\n')}
+function actionYaml(e){
+  if(!e.action||e.action==='none')return['    tap_action: false'];
+  const actionEntity=(e.actionEntity||e.entity||'').trim();
+  if(e.action==='toggle'){
+    if(!actionEntity)return['    tap_action: false'];
+    return['    tap_action:','      action: call-service','      service: homeassistant.toggle','      service_data:',`        entity_id: ${actionEntity}`];
+  }
+  if(e.action==='more-info')return['    tap_action:','      action: more-info'];
+  if(e.action==='call-service'){
+    const t=e.target||actionEntity;
+    const a=['    tap_action:','      action: call-service',`      service: ${e.service||'homeassistant.toggle'}`];
+    if(t)a.push('      service_data:',`        entity_id: ${t}`);
+    return a;
+  }
+  return[];
+}
+function floorplanYaml(){
+  const svg=$('#svgPath').value.trim()||'/local/floorplan/floorplan.svg';
+  const css=$('#cssPath').value.trim()||'/local/floorplan/floorplan.css';
+  const y=[
+    'image:',
+    `  location: ${svg}`,
+    '  cache: false',
+    'stylesheet:',
+    `  location: ${css}`,
+    '  cache: false',
+    'defaults:',
+    '  hover_action: hover-info',
+    'rules:'
+  ];
+  const v=project.elements.filter(e=>e.entity);
+  if(!v.length){y.push('  []');return y.join('\n')}
+  v.forEach(e=>{
+    y.push(`  - entity: ${e.entity}`,`    element: ${e.id}`);
+    actionYaml(e).forEach(x=>y.push(x));
+    if(e.visible){
+      const st=String(e.visible).replace(/'/g,"\'");
+      y.push(
+        '    state_action:',
+        '      - action: call-service',
+        '        service: floorplan.style_set',
+        '        service_data:',
+        '          style: |',
+        `            display: \${entity.state === '${st}' ? 'block' : 'none'};`
+      );
+    } else if(e.type==='entity'){
+      const mode=entityDisplayMode(e),showIcon=!['name_value','value_only'].includes(mode),showValue=['icon_value','icon_name_value','name_value','value_only'].includes(mode),dec=Math.max(0,Math.min(3,Number(e.decimals??1))),useUnit=(e.unitMode??'auto')==='auto';
+      y.push('    state_action:');
+      if(showIcon)y.push(
+        '      - action: call-service',
+        '        service: floorplan.style_set',
+        '        service_data:',
+        `          element: ${e.id}__dot`,
+        '          style: |',
+        "            fill: ${entity.state === 'on' ? '#ffd54a' : '#596776'}; transition: fill 180ms ease;"
+      );
+      if(showValue)y.push(
+        '      - action: call-service',
+        '        service: floorplan.text_set',
+        '        service_data:',
+        `          element: ${e.id}__value`,
+        '          text: |',
+        '            >',
+        "            var raw = String((entity && entity.state !== undefined && entity.state !== null) ? entity.state : '');",
+        "            var low = raw.toLowerCase();",
+        "            if (low === 'unknown' || low === 'unavailable' || low === 'none' || low === '') return '—';",
+        '            var n = Number(raw);',
+        `            var value = isFinite(n) ? n.toFixed(${dec}) : raw;`,
+        `            if (isFinite(n) && ${dec} > 0) value = value.replace(/(\\.\\d*?[1-9])0+$|\\.0+$/, '$1');`,
+        useUnit ? "            var unit = (entity.attributes && entity.attributes.unit_of_measurement) ? entity.attributes.unit_of_measurement : '';" : "            var unit = '';",
+        "            return unit ? value + ' ' + unit : value;"
+      );
+    } else if(e.type==='boiler'){
+
+      y.push('    state_action:');
+
+      for(let i=1;i<=20;i++){
+
+        const low=(i-1)*5;
+        const sn=String(i).padStart(2,'0');
+
+        y.push(
+          '      - action: call-service',
+          '        service: floorplan.style_set',
+          '        service_data:',
+          `          element: ${e.id}__seg${sn}`,
+          '          style: |',
+          '            >',
+
+          "            var raw = String((entity && entity.state !== undefined) ? entity.state : '');",
+
+          "            var lowState = raw.toLowerCase();",
+
+          "            var n = Number(raw);",
+
+          "            var ok = !['unknown','unavailable','none',''].includes(lowState) && isFinite(n);",
+
+          "            var p = ok ? Math.max(0,Math.min(100,n)) : 0;",
+
+          "            var hue = Math.max(0,Math.min(220,220-(p/100)*220));",
+
+          "            var color = 'hsl(' + hue + ',95%,55%)';",
+
+          `            var op = Math.max(0,Math.min(1,(p-${low})/5));`,
+
+          "            return 'opacity:' + op + '; fill:' + color + '; transition:opacity 180ms ease, fill 180ms ease;'"
+        );
+      }
+
+
+      y.push(
+        '      - action: call-service',
+        '        service: floorplan.text_set',
+        '        service_data:',
+        `          element: ${e.id}__value`,
+        '          text: |',
+        '            >',
+
+        "            var raw = String((entity && entity.state !== undefined) ? entity.state : '');",
+
+        "            var low = raw.toLowerCase();",
+
+        "            var n = Number(raw);",
+
+        "            if (['unknown','unavailable','none',''].includes(low) || !isFinite(n)) return '—';",
+
+        "            n = Math.max(0,Math.min(100,n));",
+
+        "            return Math.round(n) + '%';"
+      );
+
+    } else if(e.type==='room'){
+      const off=Number(e.offOpacity??0).toFixed(3);
+      const on=Number(e.onOpacity??.34).toFixed(3);
+      const follow=e.followBrightness!==false;
+      y.push(
+        '    state_action:',
+        '      - action: call-service',
+        '        service: floorplan.style_set',
+        '        service_data:',
+        `          element: ${e.id}__light`,
+        '          style: |',
+        '            >',
+        `            var off = ${off};`,
+        `            var on = ${on};`,
+        follow ? '            var raw = (entity.attributes && entity.attributes.brightness !== undefined) ? Number(entity.attributes.brightness) : 255;' : '            var raw = 255;',
+        '            var b = isFinite(raw) ? Math.max(0, Math.min(255, raw)) : 255;',
+        follow ? "            var op = entity.state === 'on' ? off + (on - off) * (b / 255) : off;" : "            var op = entity.state === 'on' ? on : off;",
+        "            return 'opacity: ' + op + '; fill-opacity: 1; transition: opacity 180ms ease;';"
+      );
+    } else if(e.type==='ledstrip'){
+      const off=Number(e.offOpacity??0).toFixed(3);
+      const on=Number(e.onOpacity??.82).toFixed(3);
+      const follow=e.followBrightness!==false;
+      const followColor=e.followColor!==false;
+      const fallback=e.color||'#ffd98a';
+      y.push(
+        '    state_action:',
+        '      - action: call-service',
+        '        service: floorplan.style_set',
+        '        service_data:',
+        `          element: ${e.id}__light`,
+        '          style: |',
+        '            >',
+        `            var off = ${off};`,
+        `            var on = ${on};`,
+        follow ? '            var raw = (entity.attributes && entity.attributes.brightness !== undefined) ? Number(entity.attributes.brightness) : 255;' : '            var raw = 255;',
+        '            var b = isFinite(raw) ? Math.max(0, Math.min(255, raw)) : 255;',
+        follow ? "            var op = entity.state === 'on' ? off + (on - off) * (b / 255) : off;" : "            var op = entity.state === 'on' ? on : off;",
+        `            var color = '${fallback}';`,
+        followColor ? "            var a = entity.attributes || {};" : "            var a = {};",
+        followColor ? "            var rgb = a.rgb_color;" : "            var rgb = null;",
+        followColor ? "            var hs = a.hs_color;" : "            var hs = null;",
+        followColor ? "            var xy = a.xy_color;" : "            var xy = null;",
+        "            if (rgb && rgb.length >= 3) {",
+        "              color = 'rgb(' + Math.round(Number(rgb[0]) || 0) + ',' + Math.round(Number(rgb[1]) || 0) + ',' + Math.round(Number(rgb[2]) || 0) + ')';",
+        "            } else if (hs && hs.length >= 2) {",
+        "              var h = ((Number(hs[0]) || 0) % 360 + 360) % 360;",
+        "              var sat = Math.max(0, Math.min(1, (Number(hs[1]) || 0) / 100));",
+        "              var c = sat; var x = c * (1 - Math.abs((h / 60) % 2 - 1)); var m = 1 - c;",
+        "              var rr = 0, gg = 0, bb = 0;",
+        "              if (h < 60) { rr=c; gg=x; } else if (h < 120) { rr=x; gg=c; } else if (h < 180) { gg=c; bb=x; } else if (h < 240) { gg=x; bb=c; } else if (h < 300) { rr=x; bb=c; } else { rr=c; bb=x; }",
+        "              color = 'rgb(' + Math.round((rr+m)*255) + ',' + Math.round((gg+m)*255) + ',' + Math.round((bb+m)*255) + ')';",
+        "            } else if (xy && xy.length >= 2 && Number(xy[1]) > 0) {",
+        "              var xx = Number(xy[0]); var yy = Number(xy[1]); var Y = 1; var X = (Y / yy) * xx; var Z = (Y / yy) * (1 - xx - yy);",
+        "              var r = X*1.656492 - Y*0.354851 - Z*0.255038; var g = -X*0.707196 + Y*1.655397 + Z*0.036152; var bl = X*0.051713 - Y*0.121364 + Z*1.01153;",
+        "              r = r <= 0.0031308 ? 12.92*r : 1.055*Math.pow(Math.max(0,r),1/2.4)-0.055; g = g <= 0.0031308 ? 12.92*g : 1.055*Math.pow(Math.max(0,g),1/2.4)-0.055; bl = bl <= 0.0031308 ? 12.92*bl : 1.055*Math.pow(Math.max(0,bl),1/2.4)-0.055;",
+        "              var mx = Math.max(r,g,bl,1); r=r/mx; g=g/mx; bl=bl/mx;",
+        "              color = 'rgb(' + Math.round(Math.max(0,Math.min(1,r))*255) + ',' + Math.round(Math.max(0,Math.min(1,g))*255) + ',' + Math.round(Math.max(0,Math.min(1,bl))*255) + ')';",
+        "            }",
+        "            return 'opacity: ' + op + '; color: ' + color + '; transition: opacity 180ms ease, color 180ms ease;';"
+      );
+    } else if(e.type==='uplight'||e.type==='spotlight'){
+      const off=Number(e.offOpacity??0).toFixed(3);
+      const on=Number(e.onOpacity??.72).toFixed(3);
+      const follow=e.followBrightness!==false;
+      y.push(
+        '    state_action:',
+        '      - action: call-service',
+        '        service: floorplan.style_set',
+        '        service_data:',
+        '          style: |',
+        '            >',
+        `            var off = ${off};`,
+        `            var on = ${on};`,
+        follow ? '            var raw = (entity.attributes && entity.attributes.brightness !== undefined) ? Number(entity.attributes.brightness) : 255;' : '            var raw = 255;',
+        '            var b = isFinite(raw) ? Math.max(0, Math.min(255, raw)) : 255;',
+        follow ? "            var op = entity.state === 'on' ? off + (on - off) * (b / 255) : off;" : "            var op = entity.state === 'on' ? on : off;",
+        "            return 'opacity: ' + op + '; transition: opacity 180ms ease;';"
+      );
+    }
+  });
+  return y.join('\n');
+}
+function cardYaml(){return`type: custom:floorplan-card\nfull_height: true\nconfig: /local/floorplan/floorplan.yaml\n`}
+function css(){return`/* HA Floorplan Studio v1.0.0 */\nsvg { width: 100% !important; height: 100% !important; max-width: none !important; max-height: none !important; display: block; }\n`}
+$('#exportSvg').onclick=()=>download('floorplan.svg',exportSvg(),'image/svg+xml');$('#exportCss').onclick=()=>download('floorplan.css',css(),'text/css');$('#exportYaml').onclick=()=>download('floorplan.yaml',floorplanYaml(),'text/yaml');$('#exportCard').onclick=()=>download('card.yaml',cardYaml(),'text/yaml');
+function saveProject(){download('floorplan-project.json',JSON.stringify(project,null,2),'application/json')}$('#saveProject').onclick=saveProject;$('#loadProjectBtn').onclick=()=>$('#loadProject').click();$('#loadProject').onchange=async ev=>{const f=ev.target.files[0];if(!f)return;try{const p=JSON.parse(await f.text());Object.assign(project,p);migrateProject();if($('#screenFit'))$('#screenFit').value=project.screenFit||'contain';stage.style.aspectRatio=`${project.bgWidth||1600}/${project.bgHeight||900}`;selected=null;render();toast('Project loaded')}catch(e){alert('Error: '+e.message)}};
+function migrateProject(){project.version=4.9;if(!project.screenFit)project.screenFit='contain';project.elements=(project.elements||[]).map(e=>{if(e.type==='room'&&!e.points){const w=e.w??24,h=e.h??18,x=e.x??50,y=e.y??50,ang=(e.rotate||0)*Math.PI/180,c=Math.cos(ang),s=Math.sin(ang),raw=[[-w/2,-h/2],[w/2,-h/2],[w/2,h/2],[-w/2,h/2]];e.points=raw.map(([dx,dy])=>({x:x+dx*c-dy*s,y:y+dx*s+dy*c}));delete e.x;delete e.y;delete e.w;delete e.h;delete e.rotate}if(e.actionEntity==null)e.actionEntity='';if(e.type==='spotlight'){if(e.length==null)e.length=18;if(e.beamAngle==null)e.beamAngle=45;if(e.angle==null)e.angle=0;if(!e.color)e.color='#ffe0a0';if(e.offOpacity==null)e.offOpacity=0;if(e.onOpacity==null)e.onOpacity=.72;if(e.blur==null)e.blur=3.6;if(e.followBrightness==null)e.followBrightness=true}if(e.type==='ledstrip'){if(!Array.isArray(e.points)||e.points.length<2)e.points=[{x:42,y:50},{x:58,y:50}];if(!e.color)e.color='#ffd98a';if(e.width==null)e.width=.45;if(e.glowWidth==null)e.glowWidth=2;if(e.blur==null)e.blur=2.8;if(e.offOpacity==null)e.offOpacity=0;if(e.onOpacity==null)e.onOpacity=.82;if(e.followBrightness==null)e.followBrightness=true;if(e.followColor==null)e.followColor=true;if(e.spillEnabled==null)e.spillEnabled=true;if(!e.spillDirection)e.spillDirection='down';if(e.spillAngle==null)e.spillAngle=90;if(e.spillDepth==null)e.spillDepth=5;if(e.spillSpread==null)e.spillSpread=2.8;if(e.spillOpacity==null)e.spillOpacity=.46;if(e.spillBlur==null)e.spillBlur=4.2}if(e.type==='room'){if(e.offOpacity==null)e.offOpacity=e.opacity??0;if(e.onOpacity==null)e.onOpacity=.34;if(e.softness==null)e.softness=1.5;if(e.followBrightness==null)e.followBrightness=true;if(e.previewBrightness==null)e.previewBrightness=100;if(e.roomLabel==null)e.roomLabel=true}if(e.type==='boiler'){if(e.percentOpacity==null)e.percentOpacity=1;if(e.percentX==null)e.percentX=50;if(e.percentY==null)e.percentY=50;if(e.percentSize==null)e.percentSize=20;}if(e.type==='entity'){if(e.iconOpacity==null)e.iconOpacity=1;if(e.textOpacity==null)e.textOpacity=1;if(e.pillOpacity==null)e.pillOpacity=.84;if(!e.displayMode)e.displayMode=e.label===false?'icon_only':((e.entity||'').startsWith('sensor.')?'icon_value':'icon_name');if(e.decimals==null)e.decimals=1;if(!e.unitMode)e.unitMode='auto';delete e.label}return e})}
+
+
+function syncScreenFit(){const n=$('#screenFit');if(!n)return;n.value=project.screenFit||localStorage.getItem('floorplan_screenFit')||'contain';n.onchange=()=>{project.screenFit=n.value;localStorage.setItem('floorplan_screenFit',n.value);toast('Display mode: '+n.options[n.selectedIndex].text)}}
+const DEPLOY_FIELDS=['deployMode','sshHost','sshPort','sshUser','sshKey','sshPath','localPath','svgPath','cssPath'];
+function saveDeploySettings(){DEPLOY_FIELDS.forEach(id=>{const n=$('#'+id);if(n)localStorage.setItem('floorplan_v1_'+id,n.value)})}
+function loadDeploySettings(){
+  const defs={deployMode:'ssh',sshHost:'',sshPort:'22',sshUser:'',sshKey:'',sshPath:'/config/www/floorplan',localPath:'',svgPath:'/local/floorplan/floorplan.svg',cssPath:'/local/floorplan/floorplan.css'};
+  DEPLOY_FIELDS.forEach(id=>{const n=$('#'+id);if(!n)return;n.value=localStorage.getItem('floorplan_v1_'+id) ?? defs[id] ?? n.value;n.addEventListener('input',saveDeploySettings);n.addEventListener('change',saveDeploySettings)});
+  $('#sshBox').classList.toggle('hidden',$('#deployMode').value!=='ssh');$('#localBox').classList.toggle('hidden',$('#deployMode').value!=='local');
+}
+function deployPayload(testOnly=false){return{test:testOnly,mode:$('#deployMode').value,ssh:{host:$('#sshHost').value.trim(),port:Number($('#sshPort').value||22),user:$('#sshUser').value.trim(),key:$('#sshKey').value.trim(),path:$('#sshPath').value.trim()},local:{path:$('#localPath').value.trim()},files:{'floorplan.svg':exportSvg(),'floorplan.css':css(),'floorplan.yaml':floorplanYaml(),'card.yaml':cardYaml(),'floorplan-project.json':JSON.stringify(project,null,2)}}}
+async function deploy(testOnly=false){setDeploy(null,testOnly?'Testing...':'Exporting...');try{const r=await fetch('/api/export',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(deployPayload(testOnly))});const j=await r.json();if(!r.ok)throw new Error(j.error||'Error');setDeploy(true,j.message||'Success');if(!testOnly)toast('Deployed directly to Home Assistant')}catch(err){setDeploy(false,err.message);toast('Deployment failed')}}
+function setDeploy(ok,text){$('#deployText').textContent=text;$('#deployDot').className='statusDot'+(ok===true?' ok':ok===false?' bad':'')}
+
+function showSSHWizard(title,text,publicKey=''){
+
+  const box=$('#sshWizard');
+  const wrap=$('#sshPublicWrap');
+  const keyBox=$('#sshPublicKey');
+
+  if(!box){
+    console.error('SSH wizard element not found');
+    return;
+  }
+
+  // Force the wizard to be visible.
+  box.classList.remove('hidden');
+  box.style.display='block';
+
+  $('#sshWizardTitle').textContent=title;
+  $('#sshWizardText').innerHTML=text;
+
+  if(publicKey){
+
+    if(keyBox)
+      keyBox.value=publicKey;
+
+    if(wrap){
+      wrap.classList.remove('hidden');
+      wrap.style.display='block';
+    }
+
+  }else{
+
+    if(wrap){
+      wrap.classList.add('hidden');
+      wrap.style.display='none';
+    }
+  }
+
+  setTimeout(()=>{
+    box.scrollIntoView({
+      behavior:'smooth',
+      block:'nearest'
+    });
+  },100);
+}
+async function setupSSHAutomatically(){
+
+  setDeploy(null,'Preparing SSH key...');
+
+  try{
+
+    const r=await fetch('/api/ssh/setup',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:'{}'
+    });
+
+    const j=await r.json();
+
+    if(!r.ok || !j.ok)
+      throw new Error(j.error||'Unable to create SSH key');
+
+    $('#sshKey').value=j.private_key_path||'';
+
+    // Trigger existing settings persistence.
+    $('#sshKey').dispatchEvent(
+      new Event('input',{bubbles:true})
+    );
+
+    showSSHWizard(
+      j.created ? 'SSH Key Created' : 'SSH Key Ready',
+      `
+        <div style="margin-bottom:6px">
+          ✅ A dedicated SSH key is ready on this computer.
+        </div>
+        <div>
+          The <b>private key stays on this computer</b>.
+          Never copy or publish the private key.
+        </div>
+        <div style="margin-top:6px">
+          Home Assistant only needs the <b>public key</b> shown below.
+        </div>
+      `,
+      j.public_key||''
+    );
+
+    setDeploy(
+      null,
+      'SSH key ready — authorize the public key in Home Assistant'
+    );
+
+
+  }catch(err){
+
+    setDeploy(false,err.message);
+
+    showSSHWizard(
+      'SSH Setup Failed',
+      `❌ ${html(err.message)}`
+    );
+  }
+}
+
+
+async function testSSHConnection(){
+
+  const host=$('#sshHost').value.trim();
+  const user=$('#sshUser').value.trim();
+  const key=$('#sshKey').value.trim();
+  const port=Number($('#sshPort').value||22);
+
+  if(!host){
+    setDeploy(false,'Enter the Home Assistant host or IP address');
+    return;
+  }
+
+  if(!user){
+    setDeploy(false,'Enter the SSH username configured in your SSH add-on');
+    return;
+  }
+
+  if(!key){
+    setDeploy(false,'Set up the SSH key first');
+    showSSHWizard(
+      'SSH Key Required',
+      'Click <b>Set Up SSH Automatically</b> first.'
+    );
+    return;
+  }
+
+  setDeploy(null,'Testing SSH connection...');
+
+  try{
+
+    const r=await fetch('/api/ssh/test',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({
+        host,
+        port,
+        user,
+        key,
+        path:$('#sshPath').value.trim()
+      })
+    });
+
+    const j=await r.json();
+
+    if(!r.ok)
+      throw new Error(j.error||'SSH test failed');
+
+    if(j.ok){
+
+      if(j.path){
+        $('#sshPath').value=j.path;
+        $('#sshPath').dispatchEvent(
+          new Event('input',{bubbles:true})
+        );
+      }
+
+      let methodText='SSH shell transfer';
+      let detail='';
+
+      if(j.method==='sftp'){
+        methodText='SFTP';
+        detail=`
+          ✅ SFTP is available.<br>
+        `;
+      }
+
+      if(j.method==='shell'){
+        methodText='SSH shell transfer';
+        detail=`
+          ⚠️ SFTP is not available.<br>
+          ✅ SSH shell transfer works.<br>
+        `;
+      }
+
+      if(j.method==='shell_sudo'){
+        methodText='SSH shell + sudo';
+        detail=`
+          ⚠️ Direct user write access is not available.<br>
+          ✅ Passwordless sudo is available.<br>
+          ✅ SSH shell transfer works.<br>
+        `;
+      }
+
+      setDeploy(
+        true,
+        'Ready — '+methodText
+      );
+
+      showSSHWizard(
+        'Direct Deployment Ready',
+        `
+          ✅ Home Assistant is reachable.<br>
+          ✅ SSH authentication works.<br>
+          ${detail}
+          ✅ Target directory detected:<br>
+          <b>${html(j.path||'')}</b><br><br>
+
+          <b>Direct deployment is ready.</b><br><br>
+
+          HA Floorplan Studio selected
+          <b>${html(methodText)}</b>
+          automatically.
+        `
+      );
+
+      return;
+    }
+    if(j.stage==='network'){
+
+      setDeploy(
+        false,
+        'SSH port is not reachable'
+      );
+
+      showSSHWizard(
+        'Cannot Reach SSH',
+        `
+          ❌ HA Floorplan Studio cannot connect to
+          <b>${html(host)}:${port}</b>.<br><br>
+
+          Check:<br>
+          • Home Assistant IP address<br>
+          • SSH add-on is installed and running<br>
+          • The SSH port is exposed in the add-on network settings<br>
+          • The configured SSH port is correct
+        `
+      );
+
+      return;
+    }
+
+    if(j.stage==='authentication'){
+
+      setDeploy(
+        false,
+        'Public key is not authorized yet'
+      );
+
+      showSSHWizard(
+        'Authorize This SSH Key',
+        `
+          ✅ Home Assistant SSH is reachable.<br>
+          ❌ The generated key has not been authorized yet.<br><br>
+          Follow the Home Assistant instructions below, restart the SSH add-on,
+          and then click <b>Test Connection</b> again.
+        `,
+        j.public_key||$('#sshPublicKey').value
+      );
+
+      return;
+    }
+
+    if(j.stage==='sftp'){
+
+      setDeploy(
+        false,
+        'SSH works, but SFTP is unavailable'
+      );
+
+      showSSHWizard(
+        'SFTP Is Not Available',
+        `
+          ✅ SSH login works.<br>
+          ❌ SFTP could not be opened.<br><br>
+          Direct deployment requires an SSH setup that supports SFTP.
+          Check the documentation for your Home Assistant SSH add-on.
+        `
+      );
+
+      return;
+    }
+
+    setDeploy(
+      false,
+      j.message||'SSH connection failed'
+    );
+
+    showSSHWizard(
+      'SSH Connection Failed',
+      `❌ ${html(j.message||j.detail||'Unknown SSH error')}`
+    );
+
+  }catch(err){
+
+    setDeploy(
+      false,
+      err.message
+    );
+
+    showSSHWizard(
+      'SSH Test Failed',
+      `❌ ${html(err.message)}`
+    );
+  }
+}
+
+
+$('#setupSSH').onclick=setupSSHAutomatically;
+
+$('#copySSHKey').onclick=async()=>{
+
+  const key=$('#sshPublicKey').value.trim();
+
+  if(!key){
+    toast('No public key available');
+    return;
+  }
+
+  try{
+
+    await navigator.clipboard.writeText(key);
+
+    toast('Public key copied');
+
+  }catch(e){
+
+    $('#sshPublicKey').select();
+
+    document.execCommand('copy');
+
+    toast('Public key copied');
+  }
+};
+
+
+$('#exportDirect').onclick=()=>deploy(false);
+
+$('#testDeploy').onclick=()=>{
+  if($('#deployMode').value==='ssh')
+    testSSHConnection();
+  else
+    deploy(true);
+};
+
+if($('#testLocalDeploy')){
+  $('#testLocalDeploy').onclick=()=>deploy(true);
+}
+
+$('#deployMode').onchange=()=>{
+  $('#sshBox').classList.toggle(
+    'hidden',
+    $('#deployMode').value!=='ssh'
+  );
+
+  $('#localBox').classList.toggle(
+    'hidden',
+    $('#deployMode').value!=='local'
+  );
+};
+
+
+loadDeploySettings();syncScreenFit();$('#haUrl').value=sessionStorage.getItem('ha_floorplan_v1_url')||'';$('#haToken').value=sessionStorage.getItem('ha_floorplan_v1_token')||'';migrateProject();renderHaList();render();updateModeBtn();
+})();
+</script>
+</body>
+</html>
